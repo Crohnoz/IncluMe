@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estacionamientos para Discapacitados</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="{% static 'js/parking.js' %}"></script>
+    <!-- Opcional: Agregar API de autocompletado aquí -->
+</head>
+<body>
+    <header>
+        <nav>
+            <img src="{% static 'images/inclumelogo.png' %}" alt="IncluMe Logo" style="height: 50px;">
+            <ul>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/resources">Recursos</a></li>
+                <li><a href="/parking">Estacionamientos</a></li>
+                <li><a href="/contact">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Buscar Estacionamientos para Discapacitados</h1>
+        <div class="search-box">
+            <input type="text" id="addressInput" placeholder="Introduce una dirección...">
+            <button onclick="searchParking()">Buscar</button>
+        </div>
+        <div id="map" style="height: 400px; width: 100%;"></div>
+    </main>
+
+    <footer>
+        <p>© 2025 IncluMe. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Scripts para Leaflet y autocompletado, si aplicable -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var map = L.map('map').setView([-33.45694, -70.64827], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Agregar código de autocompletado aquí
+        });
+    </script>
+</body>
+</html>

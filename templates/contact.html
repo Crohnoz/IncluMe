@@ -1,0 +1,36 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - IncluMe</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
+            <ul>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/resources/">Recursos</a></li>
+                <li><a href="/parking/">Estacionamientos</a></li>
+                <li><a href="/contact/">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h1>Contacto</h1>
+        <p>Si tienes alguna pregunta o necesitas asistencia, por favor contáctanos usando la información a continuación:</p>
+        <ul>
+            <li>Email: contacto@inclume.org</li>
+            <li>Teléfono: +56 9 1234 5678</li>
+            <li>Dirección: Vasco de Gama 4702, Las Condes, Santiago, Chile</li>
+        </ul>
+    </main>
+    <footer>
+        <p>© 2025 IncluMe. All rights reserved.</p>
+    </footer>
+</body>
+</html>

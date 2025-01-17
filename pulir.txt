@@ -1,0 +1,8 @@
+
+app inclisiva para discapacitados de sitintos tipos, hacerla universal framework django
+
+adaptacion universal android IOS 
+gobernanza
+solucionar api google maps
+API REST index.html
+TM-8

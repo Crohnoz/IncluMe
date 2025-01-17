@@ -1,0 +1,38 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to IncluMe</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
+            <ul>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/resources/">Recursos</a></li>
+                <li><a href="/parking/">Estacionamientos</a></li>
+                <li><a href="/contact/">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h1>Welcome to IncluMe!</h1>
+        <p>This is the homepage of your accessibility-focused application.</p>
+        <p>Visitor Count: <span id="visitCount"></span></p>
+    </main>
+    <footer>
+        <p>© 2025 IncluMe. All rights reserved.</p>
+    </footer>
+    <script>
+        let count = localStorage.getItem('page_view');
+        count = count ? parseInt(count) + 1 : 1;
+        localStorage.setItem('page_view', count);
+        document.getElementById('visitCount').textContent = count;
+    </script>
+</body>
+</html>
