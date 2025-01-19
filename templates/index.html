@@ -5,8 +5,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to IncluMe</title>
+    <title>Bienvenido a IncluMe</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Botón flotante del chatbot */
+        .chatbot-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .chatbot-button:hover {
+            background-color: #004494;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -15,24 +40,56 @@
             <ul>
                 <li><a href="/">Inicio</a></li>
                 <li><a href="/resources/">Recursos</a></li>
-                <li><a href="/parking/">Estacionamientos</a></li>
                 <li><a href="/contact/">Contacto</a></li>
             </ul>
         </nav>
     </header>
+
     <main>
-        <h1>Welcome to IncluMe!</h1>
-        <p>This is the homepage of your accessibility-focused application.</p>
-        <p>Visitor Count: <span id="visitCount"></span></p>
+        <h1>¡Bienvenido a IncluMe!</h1>
+        <p>Una plataforma diseñada para la accesibilidad e inclusión.</p>
+
+        <!-- Sección de noticias -->
+        <section>
+            <h2>Últimas Noticias</h2>
+            <div class="news-carousel">
+                <div class="news-item">
+                    <h3>Mejoras en la calidad de vida para personas con discapacidad</h3>
+                    <p>Una iniciativa liderada por la Universidad de Chile y el SENADIS está promoviendo mejoras en la calidad de vida en residencias para personas con discapacidad.</p>
+                    <a href="https://radio.uchile.cl/2024/12/17/u-de-chile-y-senadis-promueven-calidad-de-vida-en-residencias-para-personas-con-discapacidad/" target="_blank">Leer más</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de videos -->
+        <section>
+            <h2>Videos Educativos</h2>
+            <p>Aprende más sobre los derechos y herramientas disponibles para personas con discapacidad.</p>
+        </section>
+
+        <!-- Sección de próximos eventos -->
+        <section>
+            <h2>Próximos Eventos</h2>
+            <ul>
+                <li>Webinar sobre Accesibilidad Digital - 10 de Marzo, 2025 - <a href="#">Inscríbete aquí</a></li>
+                <li>Taller de Movilidad Reducida - 24 de Marzo, 2025 - <a href="#">Más información</a></li>
+            </ul>
+        </section>
     </main>
+
     <footer>
-        <p>© 2025 IncluMe. All rights reserved.</p>
+        <p>© 2025 IncluMe. Todos los derechos reservados.</p>
+        <div>
+            Síguenos en:
+            <a href="https://facebook.com/IncluMe" target="_blank"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com/IncluMe" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://instagram.com/IncluMe" target="_blank"><i class="fab fa-instagram"></i></a>
+        </div>
     </footer>
-    <script>
-        let count = localStorage.getItem('page_view');
-        count = count ? parseInt(count) + 1 : 1;
-        localStorage.setItem('page_view', count);
-        document.getElementById('visitCount').textContent = count;
-    </script>
+
+    <!-- Botón flotante para el chatbot -->
+    <button class="chatbot-button" onclick="window.open('https://chatgpt.com/g/g-678d1ed2778c8191b3b39f4185a95b5b-inclume', '_blank')">
+        <i class="fas fa-comments"></i>
+    </button>
 </body>
 </html>
