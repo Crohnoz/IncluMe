@@ -1,0 +1,80 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #0056b3; /* Deep blue */
+    padding: 1rem 0; /* Top and bottom padding */
+}
+
+header nav {
+    width: 90%; /* Adjust width as needed */
+    margin: 0 auto; /* Center the nav within the header */
+    display: flex; /* Uses flexbox for layout */
+    align-items: center; /* Vertically centers the content */
+    justify-content: space-between; /* Spreads the content evenly */
+}
+
+header nav .logo {
+    width: 80px; /* Adjust based on actual logo size */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: auto; /* Pushes other nav items to the right */
+}
+
+header nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex; /* Aligns the list items in a row */
+}
+
+header nav ul li {
+    margin-right: 20px; /* Space between menu items */
+}
+
+header nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px; /* Adjust font size as needed */
+}
+
+.logo-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.logo-letters {
+    max-width: 300px; /* Adjust based on actual logo size */
+    height: auto;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+footer {
+    background-color: #007bff; /* Lighter blue */
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+footer div a {
+    color: white; /* Ajusta el color según tu diseño */
+    margin: 0 10px;
+    font-size: 24px; /* Tamaño de los iconos */
+}
+
+footer div a:hover {
+    color: #ccc; /* Color al pasar el mouse sobre el icono */
+}
