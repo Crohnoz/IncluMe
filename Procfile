@@ -1,1 +1,2 @@
-web: gunicorn IncluMe.wsgi
+web: gunicorn IncluMe.wsgi:application --log-file -
+
