@@ -1,54 +1,107 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estacionamientos para Discapacitados</title>
+    <title>Estacionamientos Accesibles</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="{% static 'js/parking.js' %}"></script>
-    <!-- Opcional: Agregar API de autocompletado aquí -->
+    <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpCWwg18XxVjYSTwsbHji3vdYHwbRzZ5I&callback=initMap">
+</script>
+
+    <style>
+        #map {
+            height: 80vh; /* Ajusta la altura según lo que necesites */
+            width: 100%;
+            margin: 20px 0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
+    <!-- Navbar -->
     <header>
         <nav>
-            <img src="{% static 'images/inclumelogo.png' %}" alt="IncluMe Logo" style="height: 50px;">
+            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
             <ul>
                 <li><a href="/">Inicio</a></li>
-                <li><a href="/resources">Recursos</a></li>
-                <li><a href="/parking">Estacionamientos</a></li>
-                <li><a href="/contact">Contacto</a></li>
+                <li><a href="/resources/">Recursos</a></li>
+                <li><a href="/contact/">Contacto</a></li>
             </ul>
         </nav>
     </header>
 
+    <!-- Contenido principal -->
     <main>
-        <h1>Buscar Estacionamientos para Discapacitados</h1>
-        <div class="search-box">
-            <input type="text" id="addressInput" placeholder="Introduce una dirección...">
-            <button onclick="searchParking()">Buscar</button>
-        </div>
-        <div id="map" style="height: 400px; width: 100%;"></div>
+        <h1>Encuentra Estacionamientos Accesibles</h1>
+        <p>Selecciona un estacionamiento en el mapa para obtener más información y abrir la ubicación en Waze.</p>
+        
+        <!-- Mapa -->
+        <div id="map"></div>
     </main>
 
+    <!-- Footer -->
     <footer>
         <p>© 2025 IncluMe. Todos los derechos reservados.</p>
+        <div>
+            Síguenos en:
+            <a href="https://facebook.com/IncluMe" target="_blank"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com/IncluMe" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://instagram.com/IncluMe" target="_blank"><i class="fab fa-instagram"></i></a>
+        </div>
     </footer>
 
-    <!-- Scripts para Leaflet y autocompletado, si aplicable -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var map = L.map('map').setView([-33.45694, -70.64827], 13);
+        function initMap() {
+            const mapCenter = { lat: -33.4489, lng: -70.6693 }; // Santiago, Chile
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: mapCenter,
+                styles: [ // Estilos personalizados para el mapa
+                    {
+                        "featureType": "water",
+                        "elementType": "geometry",
+                        "stylers": [{ "color": "#c9e3f4" }]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "geometry",
+                        "stylers": [{ "color": "#f5f1e6" }]
+                    }
+                ]
+            });
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+            const parkings = [
+                { name: "Estacionamiento 1", lat: -33.4489, lng: -70.6643 },
+                { name: "Estacionamiento 2", lat: -33.4509, lng: -70.6693 }
+            ];
 
-            // Agregar código de autocompletado aquí
-        });
+            parkings.forEach(parking => {
+                const marker = new google.maps.Marker({
+                    position: { lat: parking.lat, lng: parking.lng },
+                    map: map,
+                    title: parking.name,
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div>
+                            <h4>${parking.name}</h4>
+                            <a href="https://www.waze.com/ul?ll=${parking.lat},${parking.lng}&navigate=yes" target="_blank">
+                                Abrir en Waze
+                            </a>
+                        </div>
+                    `,
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+            });
+        }
     </script>
 </body>
 </html>
