@@ -68,10 +68,9 @@ footer div a:hover {
 }
 
 #map {
-    height: 80vh;
+    height: 80vh; /* Ajusta según el espacio necesario */
     width: 100%;
     margin: 20px 0;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #ccc; /* Opcional: solo para diseño */
+    border-radius: 10px; /* Opcional */
 }
