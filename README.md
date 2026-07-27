@@ -20,7 +20,7 @@ La aplicación incluye actualmente:
 
 ## Preview funcional
 
-`preview-v2/` contiene una demostración estática de la experiencia Chile-first. Sus puntos iniciales son ficticios y están rotulados como datos demo no verificados. Los puntos creados por la persona se guardan solo en su navegador.
+`preview-v2/` contiene una demostración estática de la experiencia Chile-first. Sus puntos iniciales son ficticios y están rotulados como datos demo no verificados. Los puntos creados por la persona se guardan solo en su navegador y no ingresan a la base de datos del proyecto.
 
 Para probarla:
 
