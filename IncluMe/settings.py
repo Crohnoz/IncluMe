@@ -126,10 +126,22 @@ STORAGES = {
     },
 }
 
+# The public OpenStreetMap tile endpoint is suitable for development and pilots.
+# Production can inject a paid or self-hosted provider without changing the UI.
+MAP_TILE_URL = os.getenv(
+    "MAP_TILE_URL",
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+)
+MAP_TILE_ATTRIBUTION = os.getenv(
+    "MAP_TILE_ATTRIBUTION",
+    "&copy; OpenStreetMap contributors",
+)
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 X_FRAME_OPTIONS = "DENY"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
