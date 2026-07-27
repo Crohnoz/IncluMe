@@ -26,10 +26,12 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [x] Evitar verificaciones repetidas mediante identificador irreversible por sesión y ventana temporal.
 - [x] Detectar posibles duplicados por proximidad antes de crear un aporte.
 - [x] Exponer incidencias y agregados de confianza en Django Admin.
-- [ ] Flujo administrativo para aceptar, fusionar o rechazar aportes.
+- [x] Flujo administrativo para aceptar, editar, reabrir, fusionar o rechazar aportes.
+- [x] Historial editorial inmutable con actor, fecha, motivo y snapshot de cambios.
+- [x] Fusión segura que conserva verificaciones, evita fingerprints duplicados y enlaza el registro canónico.
 - [ ] Evidencia fotográfica con almacenamiento seguro.
 - [ ] Difuminado de rostros y patentes antes de publicar.
-- [ ] Historial de cambios visible.
+- [ ] Historial de cambios visible para usuarios públicos.
 - [ ] Puntaje de confianza calibrado y validado con usuarios.
 - [ ] Verificación institucional diferenciada.
 
@@ -86,5 +88,5 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 5. La disponibilidad continúa siendo comunitaria, no tiempo real.
 6. La cola offline depende del almacenamiento local del navegador y requiere pruebas en iOS/Android reales.
 7. La detección de duplicados por radio debe evolucionar a PostGIS cuando aumente el volumen.
-8. Falta una política operativa para fusionar registros y resolver verificaciones contradictorias.
+8. La política editorial ya está instrumentada, pero debe documentarse y probarse con un equipo real antes de producción.
 9. Los puntos incluidos en la preview son ficticios y nunca deben presentarse como datos reales.
