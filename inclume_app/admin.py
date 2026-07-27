@@ -27,7 +27,9 @@ class ParkingAdmin(admin.ModelAdmin):
         "status",
         "is_published",
         "verification_count",
+        "issue_report_count",
         "last_verified_at",
+        "last_reported_at",
     )
     list_filter = (
         "is_published",
@@ -35,6 +37,7 @@ class ParkingAdmin(admin.ModelAdmin):
         "place_type",
         "transfer_side",
         "surface_type",
+        "last_issue_type",
         "has_official_signage",
         "has_transfer_space",
         "has_curb_ramp",
@@ -49,7 +52,10 @@ class ParkingAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         "verification_count",
+        "issue_report_count",
         "last_verified_at",
+        "last_reported_at",
+        "last_issue_type",
         "created_at",
         "updated_at",
     )
@@ -57,12 +63,7 @@ class ParkingAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "Publicación",
-            {
-                "fields": (
-                    "is_published",
-                    "status",
-                )
-            },
+            {"fields": ("is_published", "status")},
         ),
         (
             "Ubicación",
@@ -104,7 +105,10 @@ class ParkingAdmin(admin.ModelAdmin):
                     "schedule_info",
                     "cost_info",
                     "verification_count",
+                    "issue_report_count",
                     "last_verified_at",
+                    "last_reported_at",
+                    "last_issue_type",
                     "created_by",
                     "created_at",
                     "updated_at",
@@ -134,7 +138,8 @@ class ParkingVerificationAdmin(admin.ModelAdmin):
         "created_at",
     )
     search_fields = ("parking__name", "parking__location", "comment")
-    readonly_fields = ("created_at",)
+    readonly_fields = ("submission_fingerprint", "created_at")
+    date_hierarchy = "created_at"
 
 
 admin.site.register(EducationalResource)
