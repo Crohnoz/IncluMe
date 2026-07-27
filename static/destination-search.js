@@ -37,9 +37,9 @@
         [destination.latitude, destination.longitude],
         { icon: destinationIcon },
     ).addTo(map);
-    destinationMarker.bindPopup(
-        document.createTextNode(destination.label),
-    );
+    const destinationPopup = document.createElement("strong");
+    destinationPopup.textContent = destination.label;
+    destinationMarker.bindPopup(destinationPopup);
 
     const bounds = [[destination.latitude, destination.longitude]];
     parkings.forEach((parking, index) => {
