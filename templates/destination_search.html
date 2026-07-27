@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Buscar estacionamiento accesible | IncluMe{% endblock %}
+{% block meta_description %}Busca un destino en Chile y revisa estacionamientos accesibles aprobados dentro de un radio cercano.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="{% static 'destination-search.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="destination-page section-shell" aria-labelledby="destination-title">
+    <header class="destination-hero">
+        <div>
+            <span class="eyebrow">IncluMe Estaciona · Chile</span>
+            <h1 id="destination-title">Encuentra una opción cerca de tu destino</h1>
+            <p>Busca el lugar al que vas, elige la coincidencia correcta y compara estacionamientos aprobados por distancia y condiciones observables.</p>
+        </div>
+        <a class="button button--secondary" href="{% url 'parking_map' %}">Abrir mapa avanzado</a>
+    </header>
+
+    <form class="destination-form" method="get" action="{% url 'parking' %}" aria-label="Buscar destino en Chile">
+        <label class="field destination-form__query" for="destination-query">
+            <span>Nombre del destino, dirección o comuna</span>
+            <input
+                id="destination-query"
+                name="q"
+                type="search"
+                value="{{ query }}"
+                minlength="3"
+                maxlength="160"
+                required
+                autocomplete="off"
+                placeholder="Ej.: Hospital Regional de Temuco"
+            >
+        </label>
+        <label class="field destination-form__radius" for="destination-radius">
+            <span>Radio de búsqueda</span>
+            <select id="destination-radius" name="radius">
+                {% for option in radius_options %}
+                    <option value="{{ option }}" {% if option == radius_km %}selected{% endif %}>
+                        {% if option < 1 %}{{ option|floatformat:1 }} km{% else %}{{ option|floatformat:0 }} km{% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="button button--primary destination-form__submit" type="submit">Buscar destino</button>
+    </form>
+
+    <p class="privacy-search-note">
+        La búsqueda se ejecuta solo al presionar el botón. No hay autocompletado ni seguimiento continuo. No ingreses domicilios particulares ni datos personales.
+    </p>
+
+    {% if error_message %}
+        <div class="destination-message destination-message--error" role="alert">
+            <strong>No pudimos completar la búsqueda.</strong>
+            <span>{{ error_message }}</span>
+        </div>
+    {% endif %}
+
+    {% if geocoding_results %}
+        <section class="destination-choices" aria-labelledby="destination-choices-title">
+            <div class="destination-section-heading">
+                <div>
+                    <span class="status-chip">Resultados de dirección</span>
+                    <h2 id="destination-choices-title">Elige el destino correcto</h2>
+                </div>
+                <span>{{ geocoding_results|length }} coincidencia{{ geocoding_results|length|pluralize }}</span>
+            </div>
+            <ol class="destination-choice-list">
+                {% for result in geocoding_results %}
+                    <li>
+                        <a href="?latitude={{ result.latitude }}&longitude={{ result.longitude }}&label={{ result.label|urlencode }}&radius={{ radius_km }}">
+                            <strong>{{ result.label }}</strong>
+                            <span>Usar este destino y buscar dentro de {{ radius_km|floatformat:1 }} km</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ol>
+        </section>
+    {% endif %}
+
+    {% if destination %}
+        <section class="selected-destination" aria-labelledby="selected-destination-title">
+            <div>
+                <span class="status-chip status-chip--success">Destino seleccionado</span>
+                <h2 id="selected-destination-title">{{ destination.label }}</h2>
+                <p>Mostrando registros aprobados a un máximo de {{ radius_km|floatformat:1 }} km en línea recta.</p>
+            </div>
+            <div class="selected-destination__actions">
+                <a class="button button--secondary" href="{% url 'parking' %}">Cambiar destino</a>
+                <a class="button button--secondary" href="https://www.google.com/maps/search/?api=1&query={{ destination.latitude }},{{ destination.longitude }}">Ver destino en Google Maps</a>
+            </div>
+        </section>
+
+        <div class="destination-workspace">
+            <section class="nearby-results" aria-labelledby="nearby-title">
+                <div class="destination-section-heading">
+                    <div>
+                        <h2 id="nearby-title">Estacionamientos cercanos</h2>
+                        <p>{{ nearby_parkings|length }} opción{{ nearby_parkings|length|pluralize:"es" }} aprobada{{ nearby_parkings|length|pluralize }}.</p>
+                    </div>
+                </div>
+
+                {% if nearby_parkings %}
+                    <ol class="nearby-list">
+                        {% for parking in nearby_parkings %}
+                            <li class="nearby-card{% if forloop.first %} nearby-card--best{% endif %}">
+                                <div class="nearby-card__topline">
+                                    {% if forloop.first %}<span class="status-chip status-chip--success">Más cercano</span>{% endif %}
+                                    <span class="status-chip">{{ parking.status_label }}</span>
+                                </div>
+                                <h3>{{ parking.name }}</h3>
+                                <p class="nearby-card__address">{{ parking.location }}</p>
+                                <div class="nearby-card__metrics">
+                                    <span><strong>{{ parking.distance_m }} m</strong> desde el destino</span>
+                                    {% if parking.distance_to_entrance_m != None %}
+                                        <span><strong>{{ parking.distance_to_entrance_m }} m</strong> hasta la entrada accesible</span>
+                                    {% else %}
+                                        <span>Distancia a la entrada aún no informada</span>
+                                    {% endif %}
+                                </div>
+                                <div class="nearby-card__features">
+                                    {% if parking.has_step_free_route == True %}<span>Ruta sin escalones</span>{% endif %}
+                                    {% if parking.has_transfer_space == True %}<span>Espacio de transferencia</span>{% endif %}
+                                    {% if parking.has_curb_ramp == True %}<span>Rebaje o rampa</span>{% endif %}
+                                    {% if parking.transfer_side != 'unknown' %}<span>{{ parking.transfer_side_label }}</span>{% endif %}
+                                </div>
+                                <div class="nearby-card__trust">
+                                    <strong>{{ parking.verification_count }} confirmación{{ parking.verification_count|pluralize:"es" }}</strong>
+                                    <span>La disponibilidad no está garantizada en tiempo real.</span>
+                                </div>
+                                <div class="nearby-card__actions">
+                                    <a class="button button--primary" href="{{ parking.waze_url }}">Abrir Waze</a>
+                                    <a class="button button--secondary" href="{{ parking.google_maps_url }}">Google Maps</a>
+                                    <a class="button button--secondary" href="{% url 'parking_map' %}#parking-{{ parking.id }}">Ver ficha avanzada</a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <div class="destination-empty">
+                        <h3>Todavía no hay un estacionamiento aprobado en este radio</h3>
+                        <p>Amplía el radio o aporta un punto exacto para que el equipo pueda revisarlo.</p>
+                        <div>
+                            {% if radius_km < 10 %}
+                                <a class="button button--secondary" href="?latitude={{ destination.latitude }}&longitude={{ destination.longitude }}&label={{ destination.label|urlencode }}&radius=10">Buscar hasta 10 km</a>
+                            {% endif %}
+                            <a class="button button--primary" href="{% url 'parking_map' %}#aportar">Aportar estacionamiento</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="destination-map-panel" aria-labelledby="destination-map-title">
+                <div class="destination-map-panel__heading">
+                    <h2 id="destination-map-title">Mapa de referencia</h2>
+                    <p>La lista anterior contiene las mismas opciones y acciones.</p>
+                </div>
+                <div id="destination-map" role="region" aria-label="Mapa del destino y estacionamientos cercanos" aria-describedby="destination-map-help"></div>
+                <p id="destination-map-help" class="visually-hidden">El mapa es complementario. Puedes usar completamente IncluMe desde la lista de resultados.</p>
+                <p class="map-attribution-note"><a href="https://www.openstreetmap.org/fixthemap">Informar un problema del mapa base</a></p>
+            </section>
+        </div>
+    {% elif not geocoding_results and not error_message %}
+        <section class="destination-onboarding" aria-labelledby="destination-onboarding-title">
+            <div>
+                <span class="status-chip">Cómo funciona</span>
+                <h2 id="destination-onboarding-title">Tres pasos, sin crear una cuenta</h2>
+            </div>
+            <ol>
+                <li><strong>Busca tu destino.</strong><span>Consulta manualmente un lugar de Chile.</span></li>
+                <li><strong>Elige la coincidencia.</strong><span>Evita terminar en una entrada o sucursal equivocada.</span></li>
+                <li><strong>Compara y navega.</strong><span>Abre el geotag exacto en Waze o Google Maps.</span></li>
+            </ol>
+        </section>
+    {% endif %}
+
+    <section class="destination-contribute" id="aportar" aria-labelledby="destination-contribute-title">
+        <div>
+            <span class="eyebrow">Construcción comunitaria</span>
+            <h2 id="destination-contribute-title">¿Falta un estacionamiento?</h2>
+            <p>Márcalo en el mapa avanzado. El aporte quedará oculto hasta que el equipo lo revise.</p>
+        </div>
+        <a class="button button--primary" href="{% url 'parking_map' %}#aportar">Marcar un punto</a>
+    </section>
+</section>
+
+{{ map_payload|json_script:"destination-map-data" }}
+{% endblock %}
+
+{% block scripts %}
+{% if destination %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="{% static 'destination-search.js' %}" defer></script>
+{% endif %}
+{% endblock %}
