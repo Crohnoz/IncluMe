@@ -45,8 +45,8 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [x] Geolocalización del dispositivo para proponer un punto.
 - [x] Marcador local pendiente mientras el aporte espera moderación.
 - [x] Preview funcional de Chile con puntos guardados localmente.
-- [ ] Geocodificación real de destinos y direcciones chilenas.
-- [ ] Búsqueda por radio desde ubicación o destino.
+- [x] Geocodificación real de destinos chilenos mediante búsqueda explícita, caché y límites de uso.
+- [x] Búsqueda por radio desde un destino, limitada a registros aprobados.
 - [ ] Catálogo inicial con estacionamientos reales y evidencia moderada.
 
 ## Hito 4 — Búsqueda y operación resiliente
@@ -59,6 +59,8 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [x] Base PWA instalable y service worker de alcance global.
 - [x] Readiness endpoint para aplicación y base de datos.
 - [x] Animaciones accesibles con preferencia de reducción de movimiento.
+- [x] Arquitectura de despliegue costo cero preparada con Render Free y PostgreSQL externo persistente.
+- [x] Bootstrap administrativo idempotente mediante variables secretas.
 - [ ] Notificaciones opcionales para verificar después de utilizar el lugar.
 - [ ] Sincronización visible y editable de la cola offline.
 
@@ -83,10 +85,11 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 
 1. Render declara una rama que no coincide con la historia principal del repositorio.
 2. Se debe revocar o restringir la clave de Google Maps expuesta en commits antiguos.
-3. El proveedor de tiles debe configurarse para carga de producción y SLA adecuado.
+3. OpenStreetMap y Nominatim son servicios comunitarios best effort; el proveedor debe seguir siendo intercambiable.
 4. Falta almacenamiento y moderación de fotografías.
 5. La disponibilidad continúa siendo comunitaria, no tiempo real.
 6. La cola offline depende del almacenamiento local del navegador y requiere pruebas en iOS/Android reales.
 7. La detección de duplicados por radio debe evolucionar a PostGIS cuando aumente el volumen.
 8. La política editorial ya está instrumentada, pero debe documentarse y probarse con un equipo real antes de producción.
 9. Los puntos incluidos en la preview son ficticios y nunca deben presentarse como datos reales.
+10. El plan gratuito de Render puede dormir; el primer acceso después de inactividad tendrá latencia de arranque.
