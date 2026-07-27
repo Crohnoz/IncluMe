@@ -22,6 +22,15 @@ La aplicación incluye actualmente:
 
 `preview-v2/` contiene una demostración estática de la experiencia Chile-first. Sus puntos iniciales son ficticios y están rotulados como datos demo no verificados. Los puntos creados por la persona se guardan solo en su navegador.
 
+Para probarla:
+
+1. Abre la preview desde un servidor estático o CDN compatible.
+2. Presiona **Marcar estacionamiento**.
+3. Toca una ubicación en Chile.
+4. Completa el nombre, referencia y condiciones observadas.
+5. Guarda el punto de prueba y revísalo en la lista o el mapa.
+6. Abre Google Maps o Waze con el geotag exacto.
+
 ## Desarrollo local
 
 ```bash
