@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}IncluMe para municipalidades{% endblock %}
+{% block meta_description %}Piloto municipal de datos colaborativos sobre estacionamientos accesibles, con moderación, trazabilidad y métricas públicas.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'municipal.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="municipal-hero">
+    <div class="section-shell municipal-hero__grid">
+        <div>
+            <span class="eyebrow">Piloto municipal · costo inicial $0</span>
+            <h1>Datos de accesibilidad que una municipalidad puede revisar, corregir y utilizar.</h1>
+            <p class="municipal-lead">IncluMe transforma aportes comunitarios en un catálogo moderado de estacionamientos accesibles. La información pública ayuda a planificar un viaje; el panel institucional permite observar cobertura, vigencia e incidencias sin pedir diagnósticos ni credenciales.</p>
+            <div class="municipal-actions">
+                <a class="button button--primary" href="{% url 'parking' %}">Probar la búsqueda</a>
+                <a class="button button--secondary" href="{% url 'contact' %}">Conversar sobre un piloto</a>
+            </div>
+            <p class="municipal-note">La disponibilidad no se presenta como tiempo real. Cada registro muestra su nivel de confianza y fecha de verificación.</p>
+        </div>
+        <aside class="municipal-principles" aria-label="Principios del piloto">
+            <strong>Principios de implementación</strong>
+            <ul>
+                <li>Lista accesible equivalente al mapa.</li>
+                <li>Moderación antes de publicar.</li>
+                <li>Trazabilidad de decisiones.</li>
+                <li>Datos observables, no información clínica.</li>
+                <li>Exportación abierta para análisis institucional.</li>
+            </ul>
+        </aside>
+    </div>
+</section>
+
+<section class="section-shell municipal-section" aria-labelledby="live-metrics-title">
+    <div class="municipal-section__heading">
+        <div>
+            <span class="eyebrow">Estado del catálogo</span>
+            <h2 id="live-metrics-title">Métricas públicas del piloto</h2>
+        </div>
+        <p>Actualizado {{ generated_at|date:"d/m/Y H:i" }}.</p>
+    </div>
+    <div class="municipal-metrics">
+        <article><strong>{{ metrics.published_count }}</strong><span>lugares publicados</span></article>
+        <article><strong>{{ metrics.verified_count }}</strong><span>con estado verificado</span></article>
+        <article><strong>{{ metrics.positive_confirmations }}</strong><span>confirmaciones positivas</span></article>
+        <article><strong>{{ metrics.issue_reports }}</strong><span>incidencias informadas</span></article>
+        <article><strong>{{ metrics.step_free_count }}</strong><span>con ruta sin escalones informada</span></article>
+        <article><strong>{{ metrics.stale_count }}</strong><span>requieren actualización</span></article>
+    </div>
+</section>
+
+<section class="section-shell municipal-section municipal-section--split">
+    <div>
+        <span class="eyebrow">Cobertura observable</span>
+        <h2>Qué tipo de lugares contiene el catálogo</h2>
+        {% if place_type_coverage %}
+            <div class="coverage-list">
+                {% for item in place_type_coverage %}
+                    <div class="coverage-row">
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.total }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-copy">Todavía no existen estacionamientos reales aprobados. El piloto puede comenzar con una zona pequeña y verificable.</p>
+        {% endif %}
+    </div>
+    <div class="municipal-card">
+        <span class="eyebrow">Modelo de piloto</span>
+        <h2>Comenzar pequeño y demostrar utilidad</h2>
+        <ol>
+            <li>Seleccionar un polígono o conjunto de destinos prioritarios.</li>
+            <li>Levantar estacionamientos y entradas accesibles con coordenadas exactas.</li>
+            <li>Revisar cada registro desde el centro de moderación.</li>
+            <li>Invitar a personas usuarias a validar recorridos reales.</li>
+            <li>Publicar métricas de cobertura, vigencia e incidencias.</li>
+        </ol>
+    </div>
+</section>
+
+<section class="municipal-governance">
+    <div class="section-shell">
+        <span class="eyebrow">Gobernanza de datos</span>
+        <h2>Una municipalidad necesita saber de dónde salió cada dato.</h2>
+        <div class="governance-grid">
+            <article>
+                <h3>Origen</h3>
+                <p>Cada aporte se conserva como registro moderado y puede vincularse con verificaciones posteriores.</p>
+            </article>
+            <article>
+                <h3>Vigencia</h3>
+                <p>Confirmaciones e incidencias se contabilizan por separado. La antigüedad se muestra explícitamente.</p>
+            </article>
+            <article>
+                <h3>Corrección</h3>
+                <p>El equipo puede editar, rechazar, reabrir o fusionar duplicados sin perder el historial.</p>
+            </article>
+            <article>
+                <h3>Privacidad</h3>
+                <p>No se solicitan diagnósticos, credenciales ni historiales de desplazamiento para buscar o aportar.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="section-shell municipal-section municipal-final-cta">
+    <div>
+        <span class="eyebrow">Siguiente paso</span>
+        <h2>Preparar una zona piloto visible para ciudadanía y equipos municipales.</h2>
+        <p>La primera meta no es cubrir todo Chile: es demostrar que una persona puede encontrar una opción útil, comprender sus condiciones y reportar cambios con bajo esfuerzo.</p>
+    </div>
+    <div class="municipal-actions">
+        <a class="button button--primary" href="{% url 'parking' %}">Abrir IncluMe</a>
+        {% if request.user.is_staff %}
+            <a class="button button--secondary" href="{% url 'municipal_dashboard' %}">Abrir panel municipal</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
