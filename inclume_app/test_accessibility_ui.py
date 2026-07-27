@@ -20,7 +20,7 @@ class InclusiveInterfaceTests(TestCase):
         payload.update(overrides)
         return payload
 
-    def test_parking_page_loads_accessibility_and_geotag_assets(self):
+    def test_parking_page_loads_accessibility_geotag_and_brand_assets(self):
         response = self.client.get(reverse("parking"))
 
         self.assertEqual(response.status_code, 200)
@@ -29,6 +29,10 @@ class InclusiveInterfaceTests(TestCase):
         self.assertContains(response, "accessibility-controls.js")
         self.assertContains(response, "parking-geotag-v4.css")
         self.assertContains(response, "parking-geotag-v4.js")
+        self.assertContains(response, "logo-v5.css")
+        self.assertContains(response, 'class="brand-logo"')
+        self.assertContains(response, 'aria-label="IncluMe, ir al inicio"')
+        self.assertContains(response, 'aria-hidden="true"')
         self.assertContains(response, "data-map-style=\"vivid\"")
 
     def test_submission_inside_chile_is_accepted_for_moderation(self):
