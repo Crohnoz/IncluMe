@@ -1,9 +1,11 @@
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),  # URL para la página de inicio
-    path('resources/', views.resources, name='resources'),  # URL para la página de recursos
-    path('parking/', views.parking, name='parking'),
-    path('contact/', views.contact, name='contact'),
+    path("", views.home, name="home"),
+    path("resources/", views.resources, name="resources"),
+    path("parking/", views.parking, name="parking"),
+    path("api/parkings/", views.parking_data, name="parking_data"),
+    path("contact/", views.contact, name="contact"),
 ]
