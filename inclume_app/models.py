@@ -73,8 +73,14 @@ class Parking(models.Model):
     class Meta:
         ordering = ["-last_verified_at", "name"]
         indexes = [
-            models.Index(fields=["latitude", "longitude"]),
-            models.Index(fields=["status", "last_verified_at"]),
+            models.Index(
+                fields=["latitude", "longitude"],
+                name="inclume_parking_coords_idx",
+            ),
+            models.Index(
+                fields=["status", "last_verified_at"],
+                name="inclume_parking_state_idx",
+            ),
         ]
 
     def __str__(self) -> str:
