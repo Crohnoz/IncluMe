@@ -2,10 +2,14 @@ import json
 from json import JSONDecodeError
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.paginator import Paginator
 from django.core.signing import salted_hmac
 from django.db import connection
+from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -13,9 +17,16 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .forms import ParkingSubmissionForm, ParkingVerificationForm
 from .models import Parking
+from .moderation import (
+    ModerationWorkflowError,
+    ParkingModerationActionForm,
+    ParkingModerationEditForm,
+    apply_moderation_action,
+    create_moderated_parking_submission,
+    update_parking_details,
+)
 from .services import (
     DuplicateVerificationError,
-    create_parking_submission,
     create_parking_verification,
     find_possible_duplicates,
     serialize_parking,
@@ -153,7 +164,10 @@ def service_worker(request):
 def parking_data(request):
     """Return published parking data for the map and accessible list view."""
     parkings = (
-        Parking.objects.filter(is_published=True)
+        Parking.objects.filter(
+            is_published=True,
+            moderation_status=Parking.ModerationStatus.APPROVED,
+        )
         .exclude(status=Parking.Status.REMOVED)
         .filter(latitude__isnull=False, longitude__isnull=False)
         .order_by("-last_verified_at", "name")
@@ -218,7 +232,7 @@ def submit_parking(request):
             json_dumps_params={"ensure_ascii": False},
         )
 
-    parking_item = create_parking_submission(
+    parking_item = create_moderated_parking_submission(
         cleaned_data=form.cleaned_data,
         user=request.user,
     )
@@ -243,6 +257,7 @@ def verify_parking(request, parking_id: int):
         Parking,
         pk=parking_id,
         is_published=True,
+        moderation_status=Parking.ModerationStatus.APPROVED,
     )
     if parking_item.status == Parking.Status.REMOVED:
         raise Http404
@@ -295,4 +310,138 @@ def verify_parking(request, parking_id: int):
         },
         status=201,
         json_dumps_params={"ensure_ascii": False},
+    )
+
+
+@staff_member_required(login_url="admin:login")
+@never_cache
+def moderation_queue(request):
+    valid_statuses = {value for value, _label in Parking.ModerationStatus.choices}
+    selected_status = request.GET.get("status", Parking.ModerationStatus.PENDING)
+    if selected_status != "all" and selected_status not in valid_statuses:
+        selected_status = Parking.ModerationStatus.PENDING
+    query = request.GET.get("q", "").strip()
+
+    items = Parking.objects.select_related(
+        "created_by",
+        "reviewed_by",
+        "merged_into",
+    )
+    if selected_status != "all":
+        items = items.filter(moderation_status=selected_status)
+    if query:
+        items = items.filter(
+            Q(name__icontains=query)
+            | Q(location__icontains=query)
+            | Q(accessibility_info__icontains=query)
+            | Q(vehicle_access_notes__icontains=query)
+        )
+
+    if selected_status == Parking.ModerationStatus.PENDING:
+        items = items.order_by("created_at")
+    else:
+        items = items.order_by("-reviewed_at", "-created_at")
+
+    counts = {
+        value: Parking.objects.filter(moderation_status=value).count()
+        for value, _label in Parking.ModerationStatus.choices
+    }
+    counts["all"] = Parking.objects.count()
+    page = Paginator(items, 20).get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "moderation_queue.html",
+        {
+            "current_page": "moderation",
+            "page": page,
+            "counts": counts,
+            "selected_status": selected_status,
+            "query": query,
+            "moderation_statuses": Parking.ModerationStatus.choices,
+        },
+    )
+
+
+@staff_member_required(login_url="admin:login")
+@never_cache
+def moderation_detail(request, parking_id: int):
+    parking_item = get_object_or_404(
+        Parking.objects.select_related(
+            "created_by",
+            "reviewed_by",
+            "merged_into",
+        ),
+        pk=parking_id,
+    )
+
+    if request.method == "POST":
+        operation = request.POST.get("operation")
+        if operation == "save_details":
+            edit_form = ParkingModerationEditForm(request.POST, instance=parking_item)
+            action_form = ParkingModerationActionForm(parking=parking_item)
+            if edit_form.is_valid():
+                parking_item = update_parking_details(
+                    parking=parking_item,
+                    form=edit_form,
+                    actor=request.user,
+                )
+                messages.success(request, "Los datos del aporte fueron actualizados y registrados en el historial.")
+                return redirect("moderation_detail", parking_id=parking_item.pk)
+        elif operation == "apply_action":
+            edit_form = ParkingModerationEditForm(instance=parking_item)
+            action_form = ParkingModerationActionForm(
+                request.POST,
+                parking=parking_item,
+            )
+            if action_form.is_valid():
+                try:
+                    parking_item = apply_moderation_action(
+                        parking=parking_item,
+                        action=action_form.cleaned_data["action"],
+                        actor=request.user,
+                        note=action_form.cleaned_data["note"],
+                        target_parking=action_form.cleaned_data["target_parking"],
+                    )
+                except ModerationWorkflowError as exc:
+                    action_form.add_error(None, str(exc))
+                else:
+                    messages.success(request, "La decisión de moderación fue aplicada y quedó registrada.")
+                    return redirect("moderation_detail", parking_id=parking_item.pk)
+        else:
+            edit_form = ParkingModerationEditForm(instance=parking_item)
+            action_form = ParkingModerationActionForm(parking=parking_item)
+            messages.error(request, "No se reconoció la operación solicitada.")
+    else:
+        edit_form = ParkingModerationEditForm(instance=parking_item)
+        action_form = ParkingModerationActionForm(parking=parking_item)
+
+    duplicate_candidates = []
+    if parking_item.has_coordinates:
+        duplicate_candidates = [
+            candidate
+            for candidate in find_possible_duplicates(
+                latitude=parking_item.latitude,
+                longitude=parking_item.longitude,
+                radius_m=80,
+                limit=10,
+            )
+            if candidate["id"] != parking_item.pk
+        ]
+
+    return render(
+        request,
+        "moderation_detail.html",
+        {
+            "current_page": "moderation",
+            "parking_item": parking_item,
+            "edit_form": edit_form,
+            "action_form": action_form,
+            "duplicate_candidates": duplicate_candidates,
+            "events": parking_item.moderation_events.select_related(
+                "actor",
+                "target_parking",
+            )[:50],
+            "verifications": parking_item.verifications.select_related("user")[:25],
+        },
     )
