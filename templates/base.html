@@ -7,10 +7,13 @@
     <meta name="theme-color" content="#0e385e">
     <meta name="description" content="{% block meta_description %}IncluMe ayuda a encontrar y verificar estacionamientos accesibles.{% endblock %}">
     <title>{% block title %}IncluMe{% endblock %}</title>
+    <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+    <link rel="icon" href="{% static 'images/inclume-app-icon.svg' %}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'parking-v3.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -60,6 +63,7 @@
         </div>
     </footer>
 
+    <script src="{% static 'parking-resilience.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
