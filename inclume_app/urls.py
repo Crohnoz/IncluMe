@@ -15,5 +15,11 @@ urlpatterns = [
         views.verify_parking,
         name="verify_parking",
     ),
+    path("moderation/", views.moderation_queue, name="moderation_queue"),
+    path(
+        "moderation/<int:parking_id>/",
+        views.moderation_detail,
+        name="moderation_detail",
+    ),
     path("contact/", views.contact, name="contact"),
 ]
