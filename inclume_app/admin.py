@@ -1,21 +1,63 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
+from .moderation import apply_moderation_action
 from .models import (
     DiscriminationReport,
     EducationalResource,
     Parking,
+    ParkingModerationEvent,
     ParkingVerification,
 )
 
 
-@admin.action(description="Publicar estacionamientos seleccionados")
-def publish_parkings(modeladmin, request, queryset):
-    queryset.update(is_published=True)
+@admin.action(description="Aprobar y publicar con trazabilidad")
+def approve_parkings(modeladmin, request, queryset):
+    processed = 0
+    for parking in queryset:
+        apply_moderation_action(
+            parking=parking,
+            action=ParkingModerationEvent.Action.APPROVED,
+            actor=request.user,
+            note="Aprobación masiva desde Django Admin.",
+        )
+        processed += 1
+    modeladmin.message_user(
+        request,
+        f"Se aprobaron {processed} registros.",
+        level=messages.SUCCESS,
+    )
 
 
-@admin.action(description="Ocultar estacionamientos seleccionados")
-def unpublish_parkings(modeladmin, request, queryset):
-    queryset.update(is_published=False)
+@admin.action(description="Reabrir y ocultar para una nueva revisión")
+def reopen_parkings(modeladmin, request, queryset):
+    processed = 0
+    for parking in queryset:
+        apply_moderation_action(
+            parking=parking,
+            action=ParkingModerationEvent.Action.REOPENED,
+            actor=request.user,
+            note="Reapertura masiva desde Django Admin.",
+        )
+        processed += 1
+    modeladmin.message_user(
+        request,
+        f"Se reabrieron {processed} registros.",
+        level=messages.SUCCESS,
+    )
+
+
+class ParkingModerationEventInline(admin.TabularInline):
+    model = ParkingModerationEvent
+    fk_name = "parking"
+    extra = 0
+    can_delete = False
+    fields = ("created_at", "action", "actor", "note", "target_parking")
+    readonly_fields = fields
+    ordering = ("-created_at",)
+    verbose_name_plural = "Historial editorial"
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Parking)
@@ -23,15 +65,16 @@ class ParkingAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "location",
-        "place_type",
+        "moderation_status",
         "status",
         "is_published",
         "verification_count",
         "issue_report_count",
-        "last_verified_at",
-        "last_reported_at",
+        "reviewed_by",
+        "reviewed_at",
     )
     list_filter = (
+        "moderation_status",
         "is_published",
         "status",
         "place_type",
@@ -49,6 +92,7 @@ class ParkingAdmin(admin.ModelAdmin):
         "accessibility_info",
         "vehicle_access_notes",
         "accessible_entrance_notes",
+        "moderation_notes",
     )
     readonly_fields = (
         "verification_count",
@@ -56,14 +100,28 @@ class ParkingAdmin(admin.ModelAdmin):
         "last_verified_at",
         "last_reported_at",
         "last_issue_type",
+        "reviewed_by",
+        "reviewed_at",
+        "merged_into",
         "created_at",
         "updated_at",
     )
-    actions = (publish_parkings, unpublish_parkings)
+    actions = (approve_parkings, reopen_parkings)
+    inlines = (ParkingModerationEventInline,)
     fieldsets = (
         (
-            "Publicación",
-            {"fields": ("is_published", "status")},
+            "Moderación y publicación",
+            {
+                "fields": (
+                    "moderation_status",
+                    "moderation_notes",
+                    "is_published",
+                    "status",
+                    "reviewed_by",
+                    "reviewed_at",
+                    "merged_into",
+                )
+            },
         ),
         (
             "Ubicación",
@@ -140,6 +198,29 @@ class ParkingVerificationAdmin(admin.ModelAdmin):
     search_fields = ("parking__name", "parking__location", "comment")
     readonly_fields = ("submission_fingerprint", "created_at")
     date_hierarchy = "created_at"
+
+
+@admin.register(ParkingModerationEvent)
+class ParkingModerationEventAdmin(admin.ModelAdmin):
+    list_display = ("parking", "action", "actor", "target_parking", "created_at")
+    list_filter = ("action", "created_at")
+    search_fields = ("parking__name", "parking__location", "note")
+    readonly_fields = (
+        "parking",
+        "actor",
+        "action",
+        "note",
+        "target_parking",
+        "snapshot",
+        "created_at",
+    )
+    date_hierarchy = "created_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(EducationalResource)
