@@ -36,12 +36,12 @@ jobs:
           node-version: "22"
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -q -r requirements.txt
 
       - name: Install browser test dependencies
         run: |
-          npm install --no-audit --no-fund
-          npx playwright install --with-deps chromium
+          npm install --no-audit --no-fund --silent
+          npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
 
       - name: Check Python syntax
         run: python -m compileall -q .
@@ -53,9 +53,25 @@ jobs:
         run: python manage.py check
 
       - name: Run Django tests
-        run: python manage.py test
+        id: django_tests
+        shell: bash
+        run: |
+          set +e
+          python manage.py test --verbosity 2 2>&1 | tee /tmp/django-tests.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Upload Django failure log
+        if: failure() && steps.django_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: django-test-log
+          path: /tmp/django-tests.log
+          retention-days: 3
 
       - name: Check JavaScript syntax
+        if: success()
         run: |
           node --check static/parking.js
           node --check static/parking-resilience.js
@@ -66,6 +82,7 @@ jobs:
           node --check preview-v2/app-v4.js
 
       - name: Validate interactive previews
+        if: success()
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -92,7 +109,26 @@ jobs:
           node --check /tmp/inclume-preview.js
 
       - name: Run browser and automated accessibility tests
-        run: npm run test:browser
+        id: browser_tests
+        if: success()
+        shell: bash
+        run: |
+          set +e
+          npm run test:browser 2>&1 | tee /tmp/browser-tests.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Upload browser failure log
+        if: failure() && steps.browser_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-log
+          path: |
+            /tmp/browser-tests.log
+            test-results/
+          retention-days: 3
 
       - name: Validate web manifest JSON
+        if: success()
         run: python -m json.tool static/manifest.webmanifest > /dev/null
