@@ -33,10 +33,22 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [ ] Puntaje de confianza calibrado y validado con usuarios.
 - [ ] Verificación institucional diferenciada.
 
-## Hito 3 — Búsqueda y operación resiliente
+## Hito 3 — Chile y geotagging
 
-- [ ] Geocodificación de destinos con proveedor respetuoso de cuotas y privacidad.
+- [x] Mapa inicial centrado en Chile.
+- [x] Paleta cartográfica neutral para reducir sobrecarga visual.
+- [x] Modo “Marcar en el mapa” desde la vista principal.
+- [x] Selector cartográfico dentro del formulario de aporte.
+- [x] Marcador arrastrable sincronizado con latitud y longitud.
+- [x] Geolocalización del dispositivo para proponer un punto.
+- [x] Marcador local pendiente mientras el aporte espera moderación.
+- [x] Preview funcional de Chile con puntos guardados localmente.
+- [ ] Geocodificación real de destinos y direcciones chilenas.
 - [ ] Búsqueda por radio desde ubicación o destino.
+- [ ] Catálogo inicial con estacionamientos reales y evidencia moderada.
+
+## Hito 4 — Búsqueda y operación resiliente
+
 - [x] Entrada accesible georreferenciada y recorrido peatonal corto como dato estructurado.
 - [x] Lugares guardados en el dispositivo sin historial de desplazamiento.
 - [x] Enlaces compartibles hacia un estacionamiento concreto.
@@ -44,10 +56,11 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [x] Borradores de aportes y verificaciones encoladas para sincronización.
 - [x] Base PWA instalable y service worker de alcance global.
 - [x] Readiness endpoint para aplicación y base de datos.
+- [x] Animaciones accesibles con preferencia de reducción de movimiento.
 - [ ] Notificaciones opcionales para verificar después de utilizar el lugar.
 - [ ] Sincronización visible y editable de la cola offline.
 
-## Hito 4 — Validación real
+## Hito 5 — Validación real
 
 - [ ] Pruebas con usuarios de silla manual y eléctrica.
 - [ ] Personas con bastón, andador, dolor o fatiga.
@@ -56,7 +69,7 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [ ] Conductores y acompañantes.
 - [ ] Objetivo: encontrar opción en ≤45 s, cero errores de entrada y confianza ≥4/5.
 
-## Hito 5 — Expansión controlada
+## Hito 6 — Expansión controlada
 
 - [ ] Baños accesibles.
 - [ ] Rampas, ascensores y entradas alternativas.
@@ -74,3 +87,4 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 6. La cola offline depende del almacenamiento local del navegador y requiere pruebas en iOS/Android reales.
 7. La detección de duplicados por radio debe evolucionar a PostGIS cuando aumente el volumen.
 8. Falta una política operativa para fusionar registros y resolver verificaciones contradictorias.
+9. Los puntos incluidos en la preview son ficticios y nunca deben presentarse como datos reales.
