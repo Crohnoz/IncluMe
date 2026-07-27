@@ -3,44 +3,27 @@
 
     const root = document.documentElement;
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const storageKey = "inclume.motion.reduced";
+    const preferencesKey = "inclume.interface.preferences.v4";
 
-    function safeStorageGet(key) {
+    function storedReduceMotion() {
         try {
-            return window.localStorage.getItem(key);
+            const stored = JSON.parse(window.localStorage.getItem(preferencesKey) || "null");
+            return stored && typeof stored.reduceMotion === "boolean" ? stored.reduceMotion : null;
         } catch (_error) {
             return null;
         }
     }
 
-    function safeStorageSet(key, value) {
-        try {
-            window.localStorage.setItem(key, value);
-        } catch (_error) {
-            // Motion preferences remain available for the current page.
-        }
-    }
-
     function userReducedMotion() {
-        const stored = safeStorageGet(storageKey);
-        if (stored === "true") return true;
-        if (stored === "false") return false;
-        return reducedMotionQuery.matches;
+        if (root.dataset.reduceMotion === "true" || root.dataset.reducedMotion === "true") return true;
+        if (root.dataset.reduceMotion === "false" || root.dataset.reducedMotion === "false") return false;
+        const stored = storedReduceMotion();
+        return stored === null ? reducedMotionQuery.matches : stored;
     }
 
-    function updateMotionState(reduced, { persist = false } = {}) {
-        root.dataset.reducedMotion = reduced ? "true" : "false";
-        if (persist) safeStorageSet(storageKey, String(reduced));
-
-        const button = document.getElementById("motion-preference");
-        if (!button) return;
-        button.setAttribute("aria-pressed", String(reduced));
-        button.querySelector(".motion-preference__label").textContent = reduced
-            ? "Activar animaciones"
-            : "Reducir animaciones";
-        button.title = reduced
-            ? "Las animaciones están reducidas en este dispositivo"
-            : "Reducir movimientos y transiciones decorativas";
+    function syncMotionDataset(reduced) {
+        root.dataset.reduceMotion = String(Boolean(reduced));
+        root.dataset.reducedMotion = String(Boolean(reduced));
     }
 
     function prepareRevealTargets() {
@@ -83,6 +66,10 @@
         targets.forEach((node) => observer.observe(node));
     }
 
+    function revealAllTargets() {
+        document.querySelectorAll("[data-reveal]").forEach((node) => node.classList.add("is-revealed"));
+    }
+
     function createSkeleton() {
         const item = document.createElement("li");
         item.className = "motion-skeleton";
@@ -107,7 +94,6 @@
         const clearSkeletons = () => {
             list.querySelectorAll(".motion-skeleton").forEach((node) => node.remove());
         };
-
         const observer = new MutationObserver(() => {
             if (list.querySelector(".parking-card, .plan-b-card") || (empty && !empty.hidden)) {
                 clearSkeletons();
@@ -132,7 +118,6 @@
                     node.addEventListener("animationend", () => node.classList.remove("motion-enter"), { once: true });
                 });
         };
-
         new MutationObserver(animate).observe(list, { childList: true });
         animate();
     }
@@ -151,20 +136,6 @@
         });
     }
 
-    function bindMotionPreference() {
-        const button = document.getElementById("motion-preference");
-        if (!button) return;
-        updateMotionState(userReducedMotion());
-        button.addEventListener("click", () => {
-            const reduced = root.dataset.reducedMotion !== "true";
-            updateMotionState(reduced, { persist: true });
-        });
-
-        reducedMotionQuery.addEventListener?.("change", () => {
-            if (safeStorageGet(storageKey) === null) updateMotionState(reducedMotionQuery.matches);
-        });
-    }
-
     function closeMobileMenuAfterNavigation() {
         const menu = document.querySelector(".mobile-nav");
         menu?.querySelectorAll("a").forEach((link) => {
@@ -172,12 +143,21 @@
         });
     }
 
-    updateMotionState(userReducedMotion());
+    syncMotionDataset(userReducedMotion());
     root.classList.add("motion-ready");
-    bindMotionPreference();
     prepareRevealTargets();
     installLoadingSkeletons();
     animateDynamicCards();
     animateLiveRegions();
     closeMobileMenuAfterNavigation();
+
+    window.addEventListener("inclume:preferences-changed", (event) => {
+        const reduced = Boolean(event.detail?.reduceMotion);
+        syncMotionDataset(reduced);
+        if (reduced) revealAllTargets();
+    });
+
+    reducedMotionQuery.addEventListener?.("change", () => {
+        if (storedReduceMotion() === null) syncMotionDataset(reducedMotionQuery.matches);
+    });
 })();
