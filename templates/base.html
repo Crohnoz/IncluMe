@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0e385e">
+    <meta name="theme-color" content="#075fc4">
     <meta name="description" content="{% block meta_description %}IncluMe ayuda a encontrar y verificar estacionamientos accesibles.{% endblock %}">
     <title>{% block title %}IncluMe{% endblock %}</title>
     <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
@@ -15,10 +15,10 @@
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     <link rel="stylesheet" href="{% static 'parking-v3.css' %}">
     <link rel="stylesheet" href="{% static 'motion.css' %}">
+    <link rel="stylesheet" href="{% static 'inclusive-v4.css' %}">
     {% block extra_head %}{% endblock %}
-    <link rel="stylesheet" href="{% static 'parking-geotag.css' %}">
 </head>
-<body>
+<body data-text-scale="standard" data-high-contrast="false" data-map-style="vivid" data-spacing="standard">
     <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
     <header class="site-header">
         <div class="site-header__inner">
@@ -27,22 +27,28 @@
                 <span class="brand__name">IncluMe</span>
             </a>
 
-            <nav class="desktop-nav" aria-label="Navegación principal">
-                <a href="{% url 'parking' %}" {% if current_page == 'parking' %}aria-current="page"{% endif %}>Encontrar</a>
-                <a href="{% url 'resources' %}" {% if current_page == 'resources' %}aria-current="page"{% endif %}>Recursos</a>
-                <a href="{% url 'contact' %}" {% if current_page == 'contact' %}aria-current="page"{% endif %}>Contacto</a>
-                <a class="button button--small" href="{% url 'parking' %}#aportar">Aportar un lugar</a>
-            </nav>
-
-            <details class="mobile-nav">
-                <summary>Menú</summary>
-                <nav aria-label="Navegación móvil">
-                    <a href="{% url 'parking' %}">Encontrar estacionamiento</a>
-                    <a href="{% url 'resources' %}">Recursos</a>
-                    <a href="{% url 'contact' %}">Contacto</a>
-                    <a href="{% url 'parking' %}#aportar">Aportar un lugar</a>
+            <div class="site-header__actions">
+                <nav class="desktop-nav" aria-label="Navegación principal">
+                    <a href="{% url 'parking' %}" {% if current_page == 'parking' %}aria-current="page"{% endif %}>Encontrar</a>
+                    <a href="{% url 'resources' %}" {% if current_page == 'resources' %}aria-current="page"{% endif %}>Recursos</a>
+                    <a href="{% url 'contact' %}" {% if current_page == 'contact' %}aria-current="page"{% endif %}>Contacto</a>
+                    <a class="button button--small" href="{% url 'parking' %}#aportar">Aportar un lugar</a>
                 </nav>
-            </details>
+
+                <button class="accessibility-button" id="accessibility-button" type="button" aria-haspopup="dialog" aria-controls="accessibility-dialog" aria-label="Abrir preferencias de accesibilidad">
+                    <span class="accessibility-button__label">Accesibilidad</span>
+                </button>
+
+                <details class="mobile-nav">
+                    <summary>Menú</summary>
+                    <nav aria-label="Navegación móvil">
+                        <a href="{% url 'parking' %}">Encontrar estacionamiento</a>
+                        <a href="{% url 'resources' %}">Recursos</a>
+                        <a href="{% url 'contact' %}">Contacto</a>
+                        <a href="{% url 'parking' %}#aportar">Aportar un lugar</a>
+                    </nav>
+                </details>
+            </div>
         </div>
     </header>
 
@@ -69,9 +75,49 @@
         </div>
     </footer>
 
+    <dialog class="accessibility-dialog" id="accessibility-dialog" aria-labelledby="accessibility-title" aria-describedby="accessibility-description">
+        <form id="accessibility-form">
+            <div class="accessibility-dialog__header">
+                <div>
+                    <span class="eyebrow">Ajustes del dispositivo</span>
+                    <h2 id="accessibility-title">Haz IncluMe más cómodo para ti</h2>
+                    <p id="accessibility-description">Estos ajustes se guardan solo en este navegador. No pedimos diagnóstico, credencial ni información médica.</p>
+                </div>
+                <button class="accessibility-close" type="button" data-close-accessibility aria-label="Cerrar preferencias de accesibilidad">×</button>
+            </div>
+
+            <div class="accessibility-dialog__body">
+                <fieldset class="accessibility-option-group">
+                    <legend>Tamaño de texto</legend>
+                    <label class="accessibility-choice"><input type="radio" name="textScale" value="standard" checked><span><strong>Estándar</strong><small>Texto cómodo para la mayoría de las pantallas.</small></span></label>
+                    <label class="accessibility-choice"><input type="radio" name="textScale" value="large"><span><strong>Grande</strong><small>Aumenta texto y altura de controles.</small></span></label>
+                    <label class="accessibility-choice"><input type="radio" name="textScale" value="x-large"><span><strong>Extra grande</strong><small>Prioriza lectura y controles amplios.</small></span></label>
+                </fieldset>
+
+                <fieldset class="accessibility-option-group">
+                    <legend>Presentación</legend>
+                    <label class="accessibility-choice"><input type="checkbox" name="highContrast"><span><strong>Alto contraste</strong><small>Refuerza texto, bordes y foco visible.</small></span></label>
+                    <label class="accessibility-choice"><input type="checkbox" name="comfortableSpacing"><span><strong>Más espacio</strong><small>Aumenta separación y altura de lectura.</small></span></label>
+                    <label class="accessibility-choice"><input type="checkbox" name="reduceMotion"><span><strong>Reducir movimiento</strong><small>Desactiva animaciones y desplazamientos suaves.</small></span></label>
+                </fieldset>
+
+                <fieldset class="accessibility-option-group">
+                    <legend>Detalle del mapa</legend>
+                    <label class="accessibility-choice"><input type="radio" name="mapStyle" value="vivid" checked><span><strong>Mapa claro y colorido</strong><small>Mantiene calles reconocibles con marcadores destacados.</small></span></label>
+                    <label class="accessibility-choice"><input type="radio" name="mapStyle" value="calm"><span><strong>Mapa simplificado</strong><small>Reduce saturación para disminuir carga visual.</small></span></label>
+                </fieldset>
+
+                <div class="accessibility-dialog__actions">
+                    <button class="button button--secondary" id="accessibility-reset" type="button">Restablecer</button>
+                    <button class="button button--primary" type="submit">Guardar y cerrar</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="{% static 'accessibility-controls.js' %}" defer></script>
     <script src="{% static 'motion.js' %}" defer></script>
     <script src="{% static 'parking-resilience.js' %}" defer></script>
-    <script src="{% static 'parking-geotag.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
