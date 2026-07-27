@@ -1,16 +1,32 @@
 "use strict";
 
-const CACHE_VERSION = "inclume-v3-2026-07-27";
+const CACHE_VERSION = "inclume-v4-motion-2026-07-27";
 const NAVIGATION_FALLBACK = "/parking/";
+const CORE_ASSETS = [
+    NAVIGATION_FALLBACK,
+    "/static/styles.css",
+    "/static/parking.css",
+    "/static/parking-v3.css",
+    "/static/motion.css",
+    "/static/parking.js",
+    "/static/parking-resilience.js",
+    "/static/motion.js",
+    "/static/manifest.webmanifest",
+    "/static/images/inclume-app-icon.svg",
+];
 
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(CACHE_VERSION).then(async (cache) => {
-            try {
-                await cache.add(NAVIGATION_FALLBACK);
-            } catch (_error) {
-                // The first successful navigation will populate the cache.
-            }
+            await Promise.allSettled(
+                CORE_ASSETS.map(async (asset) => {
+                    try {
+                        await cache.add(asset);
+                    } catch (_error) {
+                        // A missing optional asset must not prevent installation.
+                    }
+                }),
+            );
             await self.skipWaiting();
         }),
     );
