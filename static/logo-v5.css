@@ -1,0 +1,223 @@
+/* IncluMe v5 brand mark — location, identity and community. */
+
+.brand {
+    gap: 0.72rem;
+}
+
+.brand__mark {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 0;
+    background: none !important;
+    box-shadow: none !important;
+    overflow: visible;
+    transform: none !important;
+}
+
+.brand__mark::after {
+    content: none !important;
+}
+
+.brand-logo {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 8px 14px rgba(7, 95, 196, 0.22));
+    transform-origin: center;
+    animation: inclume-logo-enter 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand-logo__tile,
+.brand-logo__pin,
+.brand-logo__orbit,
+.brand-logo__community,
+.brand-logo__shine {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.brand-logo__pin {
+    animation: inclume-pin-enter 760ms 90ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.brand-logo__orbit {
+    stroke-dasharray: 24 9;
+    animation: inclume-orbit-enter 900ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 240ms ease;
+}
+
+.brand-logo__community {
+    animation: inclume-node-enter 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand-logo__community--one {
+    animation-delay: 320ms;
+}
+
+.brand-logo__community--two {
+    animation-delay: 430ms;
+}
+
+.brand-logo__shine {
+    opacity: 0;
+    stroke-dasharray: 14 90;
+    stroke-dashoffset: 22;
+}
+
+.brand:hover .brand-logo__pin,
+.brand:focus-visible .brand-logo__pin {
+    transform: translateY(-1.7px) scale(1.025);
+}
+
+.brand:hover .brand-logo__orbit,
+.brand:focus-visible .brand-logo__orbit {
+    transform: rotate(145deg);
+    opacity: 0.96;
+}
+
+.brand:hover .brand-logo__community--one,
+.brand:focus-visible .brand-logo__community--one {
+    transform: translate(1px, -1px) scale(1.12);
+}
+
+.brand:hover .brand-logo__community--two,
+.brand:focus-visible .brand-logo__community--two {
+    transform: translate(-1px, 1px) scale(1.12);
+}
+
+.brand:hover .brand-logo__shine,
+.brand:focus-visible .brand-logo__shine {
+    animation: inclume-logo-shine 820ms ease-out both;
+}
+
+.brand__name {
+    display: inline-flex;
+    align-items: baseline;
+    letter-spacing: -0.035em;
+}
+
+.brand__name-accent {
+    margin-left: 0.04em;
+    color: var(--color-violet, #6846bd);
+}
+
+body[data-high-contrast="true"] .brand__name-accent,
+html[data-high-contrast="true"] .brand__name-accent {
+    color: var(--color-blue, #004fb4);
+    text-decoration: underline;
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.16em;
+}
+
+@keyframes inclume-logo-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(5px) scale(0.78) rotate(-5deg);
+    }
+    68% {
+        opacity: 1;
+        transform: translateY(-1px) scale(1.035) rotate(1deg);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes inclume-pin-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.72);
+    }
+    72% {
+        opacity: 1;
+        transform: translateY(1px) scale(1.035);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes inclume-orbit-enter {
+    from {
+        opacity: 0;
+        stroke-dashoffset: 70;
+        transform: rotate(-90deg) scale(0.78);
+    }
+    to {
+        opacity: 0.8;
+        stroke-dashoffset: 0;
+        transform: none;
+    }
+}
+
+@keyframes inclume-node-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.2);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes inclume-logo-shine {
+    0% {
+        opacity: 0;
+        stroke-dashoffset: 28;
+    }
+    28% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0;
+        stroke-dashoffset: -58;
+    }
+}
+
+@media (max-width: 520px) {
+    .brand__mark {
+        width: 44px;
+        height: 44px;
+        flex-basis: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand-logo,
+    .brand-logo__pin,
+    .brand-logo__orbit,
+    .brand-logo__community,
+    .brand-logo__shine {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+
+    .brand-logo__orbit {
+        opacity: 0.8;
+    }
+}
+
+html[data-reduced-motion="true"] .brand-logo,
+html[data-reduced-motion="true"] .brand-logo__pin,
+html[data-reduced-motion="true"] .brand-logo__orbit,
+html[data-reduced-motion="true"] .brand-logo__community,
+html[data-reduced-motion="true"] .brand-logo__shine,
+html[data-reduce-motion="true"] .brand-logo,
+html[data-reduce-motion="true"] .brand-logo__pin,
+html[data-reduce-motion="true"] .brand-logo__orbit,
+html[data-reduce-motion="true"] .brand-logo__community,
+html[data-reduce-motion="true"] .brand-logo__shine {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+}
