@@ -6,20 +6,40 @@
   <meta name="theme-color" content="#075fc4">
   <meta name="description" content="Preview interactiva de IncluMe para marcar y revisar estacionamientos accesibles en Chile.">
   <title>IncluMe — Mapa accesible de Chile</title>
+  <link rel="icon" href="../static/images/inclume-app-icon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="inclusive.css">
+  <link rel="stylesheet" href="../static/logo-v5.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido principal</a>
   <header class="topbar">
     <div class="shell topbar__inner">
       <a class="brand" href="#main" aria-label="IncluMe, ir al mapa">
-        <span class="brand__mark" aria-hidden="true">I</span>
-        <span>IncluMe</span>
+        <span class="brand__mark" aria-hidden="true">
+          <svg class="brand-logo" viewBox="0 0 64 64" focusable="false">
+            <defs>
+              <linearGradient id="inclume-preview-brand-gradient" x1="8" y1="5" x2="57" y2="60" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#075fc4"/>
+                <stop offset="0.56" stop-color="#6846bd"/>
+                <stop offset="1" stop-color="#007c70"/>
+              </linearGradient>
+            </defs>
+            <rect class="brand-logo__tile" x="2" y="2" width="60" height="60" rx="18" fill="url(#inclume-preview-brand-gradient)"/>
+            <circle class="brand-logo__orbit" cx="32" cy="32" r="24" fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.8"/>
+            <path class="brand-logo__pin" d="M32 10.5c-9.1 0-16.5 7.1-16.5 15.9 0 11.1 16.5 27.1 16.5 27.1s16.5-16 16.5-27.1C48.5 17.6 41.1 10.5 32 10.5Z" fill="#ffffff"/>
+            <circle cx="32" cy="21.8" r="3.15" fill="#075fc4"/>
+            <rect x="29.45" y="27" width="5.1" height="14" rx="2.55" fill="#075fc4"/>
+            <circle class="brand-logo__community brand-logo__community--one" cx="50.2" cy="16.2" r="4.2" fill="#55e3cf" stroke="#ffffff" stroke-width="2"/>
+            <circle class="brand-logo__community brand-logo__community--two" cx="13" cy="44.2" r="3.8" fill="#d9cbff" stroke="#ffffff" stroke-width="2"/>
+            <path class="brand-logo__shine" d="M20.5 15.9c-3.2 2.4-5.6 5.7-6.7 9.5" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand__name"><span>Inclu</span><span class="brand__name-accent">Me</span></span>
       </a>
       <button class="button button--quiet" id="accessibility-open" type="button" aria-haspopup="dialog" aria-controls="accessibility-dialog">Accesibilidad</button>
     </div>
