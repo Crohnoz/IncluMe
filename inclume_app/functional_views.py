@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -38,6 +39,12 @@ def _parse_coordinate(value):
         return None
 
 
+def _coordinates_are_in_chile(latitude: float | None, longitude: float | None) -> bool:
+    if latitude is None or longitude is None:
+        return False
+    return coordinates_are_in_chile(Decimal(str(latitude)), Decimal(str(longitude)))
+
+
 def destination_search(request):
     query = normalize_destination_query(request.GET.get("q", ""))
     radius_km = _parse_radius(request.GET.get("radius"))
@@ -51,7 +58,7 @@ def destination_search(request):
     destination = None
 
     if latitude is not None or longitude is not None:
-        if latitude is None or longitude is None or not coordinates_are_in_chile(latitude, longitude):
+        if not _coordinates_are_in_chile(latitude, longitude):
             error_message = "El destino seleccionado no tiene coordenadas válidas dentro de Chile."
         else:
             destination = {
@@ -108,7 +115,7 @@ def nearby_parkings_api(request):
     longitude = _parse_coordinate(request.GET.get("longitude"))
     radius_km = _parse_radius(request.GET.get("radius"))
 
-    if latitude is None or longitude is None or not coordinates_are_in_chile(latitude, longitude):
+    if not _coordinates_are_in_chile(latitude, longitude):
         return JsonResponse(
             {
                 "ok": False,
