@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "inclume-v7-brand-2026-07-27";
+const CACHE_VERSION = "inclume-v8-wheelchair-brand-2026-07-27";
 const NAVIGATION_FALLBACK = "/parking/";
 const CORE_ASSETS = [
     NAVIGATION_FALLBACK,
