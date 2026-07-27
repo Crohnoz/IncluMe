@@ -64,21 +64,35 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [ ] Notificaciones opcionales para verificar después de utilizar el lugar.
 - [ ] Sincronización visible y editable de la cola offline.
 
-## Hito 5 — Validación real
+## Hito 5 — Piloto municipal visible
+
+- [x] Página pública para gobiernos locales con métricas del catálogo aprobado.
+- [x] Resumen agregado público sin datos personales.
+- [x] Panel interno para filtrar cobertura, vigencia e incidencias.
+- [x] Exportación CSV institucional con coordenadas y señales de confianza.
+- [x] Demo municipal interactiva con datos ficticios y exportación local.
+- [ ] Territorio estructurado por región, comuna y código oficial.
+- [ ] Perfiles institucionales y permisos por municipalidad.
+- [ ] Flujo para que una institución proponga correcciones firmadas.
+- [ ] Informe imprimible por comuna y zona piloto.
+- [ ] Acuerdo editorial y protocolo de respuesta a incidencias.
+
+## Hito 6 — Validación real
 
 - [ ] Pruebas con usuarios de silla manual y eléctrica.
 - [ ] Personas con bastón, andador, dolor o fatiga.
 - [ ] Baja visión y lectores de pantalla.
 - [ ] Dificultad motora de manos y uso por voz.
 - [ ] Conductores y acompañantes.
+- [ ] Equipos municipales de discapacidad, tránsito y planificación.
 - [ ] Objetivo: encontrar opción en ≤45 s, cero errores de entrada y confianza ≥4/5.
 
-## Hito 6 — Expansión controlada
+## Hito 7 — Expansión controlada
 
 - [ ] Baños accesibles.
 - [ ] Rampas, ascensores y entradas alternativas.
 - [ ] Rutas interiores y lugares de descanso.
-- [ ] Paneles para municipios, clínicas y comercios.
+- [ ] Paneles para clínicas y comercios.
 - [ ] API pública documentada.
 
 ## Riesgos actuales antes de producción
@@ -93,3 +107,4 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 8. La política editorial ya está instrumentada, pero debe documentarse y probarse con un equipo real antes de producción.
 9. Los puntos incluidos en la preview son ficticios y nunca deben presentarse como datos reales.
 10. El plan gratuito de Render puede dormir; el primer acceso después de inactividad tendrá latencia de arranque.
+11. El filtro territorial municipal todavía es textual; antes de un convenio debe migrarse a región y comuna estructuradas.
