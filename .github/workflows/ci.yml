@@ -1,0 +1,42 @@
+name: IncluMe CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - recovery/render-b793a8f
+      - feature/parking-community-mvp
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DEBUG: "true"
+      SECRET_KEY: ci-only-secret-key
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      CSRF_TRUSTED_ORIGINS: http://localhost
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Check Python syntax
+        run: python -m compileall -q .
+      - name: Check migrations
+        run: python manage.py makemigrations --check --dry-run
+      - name: Django system check
+        run: python manage.py check
+      - name: Run tests
+        run: python manage.py test
+      - name: Check JavaScript syntax
+        run: node --check static/parking.js
