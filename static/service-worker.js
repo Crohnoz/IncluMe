@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "inclume-v6-inclusive-audit-2026-07-27";
+const CACHE_VERSION = "inclume-v7-brand-2026-07-27";
 const NAVIGATION_FALLBACK = "/parking/";
 const CORE_ASSETS = [
     NAVIGATION_FALLBACK,
@@ -8,6 +8,7 @@ const CORE_ASSETS = [
     "/static/parking.css",
     "/static/parking-v3.css",
     "/static/inclusive-v4.css",
+    "/static/logo-v5.css",
     "/static/parking-geotag.css",
     "/static/parking-geotag-v4.css",
     "/static/motion.css",
