@@ -1,25 +1,26 @@
 # IncluMe
 
-IncluMe es una aplicación Django mobile-first para encontrar, comparar y verificar estacionamientos accesibles. La navegación se delega a Waze, Google Maps, Apple Maps u otra aplicación compatible mediante coordenadas exactas.
+IncluMe es una aplicación Django mobile-first para encontrar, comparar y verificar estacionamientos accesibles en Chile. La navegación se delega a Waze, Google Maps, Apple Maps u otra aplicación compatible mediante coordenadas exactas.
 
 ## Estado
 
-El desarrollo activo se encuentra en `feature/parking-community-mvp` y se revisa mediante el PR #2. Producción todavía utiliza una historia de rama distinta; revisa el PR y `docs/PRODUCT_ROADMAP.md` antes de desplegar.
+El desarrollo activo se encuentra en `feature/parking-community-mvp`. Producción todavía utiliza una historia de rama distinta; revisa el PR y `docs/PRODUCT_ROADMAP.md` antes de desplegar.
 
-La versión actual incluye:
+La aplicación incluye actualmente:
 
-- búsqueda, geolocalización explícita y preferencias funcionales;
+- mapa centrado en Chile con cartografía visualmente neutral;
 - lista accesible equivalente al mapa;
-- mejor opción y Plan B;
-- navegación externa por coordenadas;
-- aportes comunitarios retenidos para moderación;
-- verificaciones positivas separadas de incidencias recientes;
-- prevención temporal de verificaciones repetidas sin almacenar IP;
-- detección de posibles estacionamientos duplicados por proximidad;
-- lugares guardados y enlaces compartibles en el dispositivo;
-- borradores de aportes y verificaciones pendientes cuando falla la conexión;
-- caché local de la última lista disponible y base PWA instalable;
-- health check de aplicación y base de datos.
+- geolocalización solicitada después de una acción explícita;
+- modo **Marcar en el mapa** para proponer el geotag exacto;
+- selector cartográfico y marcador arrastrable dentro del aporte;
+- preferencias funcionales, Plan B, confianza e incidencias;
+- navegación externa, lugares guardados y enlaces compartibles;
+- moderación de aportes, detección de duplicados y resiliencia offline;
+- PWA, animaciones accesibles y reducción de movimiento.
+
+## Preview funcional
+
+`preview-v2/` contiene una demostración estática de la experiencia Chile-first. Sus puntos iniciales son ficticios y están rotulados como datos demo no verificados. Los puntos creados por la persona se guardan solo en su navegador.
 
 ## Desarrollo local
 
@@ -48,23 +49,17 @@ python manage.py runserver
 ## Verificación
 
 ```bash
-python -m compileall -q .
+python -m compileall .
 python manage.py makemigrations --check --dry-run
 python manage.py check
 python manage.py test
 node --check static/parking.js
 node --check static/parking-resilience.js
+node --check static/parking-geotag.js
+node --check static/motion.js
 node --check static/service-worker.js
-python -m json.tool static/manifest.webmanifest > /dev/null
+node --check preview-v2/app.js
 ```
-
-## Endpoints operativos
-
-- `GET /health/`: readiness de Django y conexión de base de datos.
-- `GET /api/parkings/`: datos públicos de lugares publicados.
-- `POST /api/parkings/submit/`: aporte nuevo bajo moderación.
-- `POST /api/parkings/<id>/verify/`: confirmación o incidencia comunitaria.
-- `GET /service-worker.js`: service worker con alcance global.
 
 ## Variables de entorno
 
@@ -73,19 +68,8 @@ python -m json.tool static/manifest.webmanifest > /dev/null
 - `ALLOWED_HOSTS`
 - `CSRF_TRUSTED_ORIGINS`
 - `DATABASE_URL`
-- `SECURE_HSTS_SECONDS`
-- `SECURE_HSTS_INCLUDE_SUBDOMAINS` opcional
-- `SECURE_HSTS_PRELOAD` opcional
 - `MAP_TILE_URL` opcional
 - `MAP_TILE_ATTRIBUTION` opcional
-
-## Límites actuales
-
-- La disponibilidad es comunitaria, no tiempo real.
-- El modo offline conserva datos y encola verificaciones, pero no descarga tiles del mapa de forma masiva.
-- Las fotografías todavía requieren almacenamiento y moderación seguros.
-- La búsqueda por dirección aún no utiliza geocodificación externa.
-- La detección de duplicados usa proximidad geográfica sin PostGIS durante el piloto.
 
 ## Guía para agentes
 
