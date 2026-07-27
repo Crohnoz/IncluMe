@@ -53,6 +53,9 @@
                     <a href="{% url 'parking' %}" {% if current_page == 'parking' %}aria-current="page"{% endif %}>Encontrar</a>
                     <a href="{% url 'resources' %}" {% if current_page == 'resources' %}aria-current="page"{% endif %}>Recursos</a>
                     <a href="{% url 'contact' %}" {% if current_page == 'contact' %}aria-current="page"{% endif %}>Contacto</a>
+                    {% if request.user.is_staff %}
+                        <a href="{% url 'moderation_queue' %}" {% if current_page == 'moderation' %}aria-current="page"{% endif %}>Moderación</a>
+                    {% endif %}
                     <a class="button button--small" href="{% url 'parking' %}#aportar">Aportar un lugar</a>
                 </nav>
 
@@ -66,12 +69,23 @@
                         <a href="{% url 'parking' %}">Encontrar estacionamiento</a>
                         <a href="{% url 'resources' %}">Recursos</a>
                         <a href="{% url 'contact' %}">Contacto</a>
+                        {% if request.user.is_staff %}
+                            <a href="{% url 'moderation_queue' %}">Centro de moderación</a>
+                        {% endif %}
                         <a href="{% url 'parking' %}#aportar">Aportar un lugar</a>
                     </nav>
                 </details>
             </div>
         </div>
     </header>
+
+    {% if messages %}
+        <div class="flash-messages" aria-label="Mensajes del sistema">
+            {% for message in messages %}
+                <p class="flash-message flash-message--{{ message.tags|default:'info' }}" role="status">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <main id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
