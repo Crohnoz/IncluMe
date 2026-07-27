@@ -94,6 +94,26 @@ DATABASES = {
     )
 }
 
+CACHE_BACKEND = os.getenv("CACHE_BACKEND", "locmem" if DEBUG else "database").strip().lower()
+if CACHE_BACKEND == "database":
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "inclume_cache",
+            "TIMEOUT": 300,
+            "OPTIONS": {"MAX_ENTRIES": 5000},
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "inclume-local-cache",
+            "TIMEOUT": 300,
+            "OPTIONS": {"MAX_ENTRIES": 2000},
+        }
+    }
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -135,16 +155,30 @@ STORAGES = {
     },
 }
 
-# The public OpenStreetMap tile endpoint is suitable for development and pilots.
-# Production can inject a paid or self-hosted provider without changing the UI.
+# OSM endpoints are configurable so the pilot can switch providers without a code deploy.
+# The public services are best-effort and must not be used for bulk/offline downloads.
 MAP_TILE_URL = os.getenv(
     "MAP_TILE_URL",
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 )
 MAP_TILE_ATTRIBUTION = os.getenv(
     "MAP_TILE_ATTRIBUTION",
     "&copy; OpenStreetMap contributors",
 )
+GEOCODING_URL = os.getenv(
+    "GEOCODING_URL",
+    "https://nominatim.openstreetmap.org/search",
+)
+GEOCODING_REFERER = os.getenv(
+    "GEOCODING_REFERER",
+    "https://github.com/Crohnoz/IncluMe",
+)
+GEOCODING_USER_AGENT = os.getenv(
+    "GEOCODING_USER_AGENT",
+    f"IncluMe/0.1 (+{GEOCODING_REFERER})",
+)
+GEOCODING_TIMEOUT_SECONDS = int(os.getenv("GEOCODING_TIMEOUT_SECONDS", "7"))
+GEOCODING_CACHE_SECONDS = int(os.getenv("GEOCODING_CACHE_SECONDS", str(30 * 24 * 60 * 60)))
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
