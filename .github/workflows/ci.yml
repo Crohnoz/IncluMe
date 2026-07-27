@@ -107,6 +107,14 @@ jobs:
           assert 'a11y-bootstrap.js' in current
           assert 'app-v4.js' in current
           assert 'inclusive.css' in current
+
+          production_logo_css = Path("static/logo-v5.css").read_text(encoding="utf-8")
+          preview_logo_css = Path("preview-v2/static/logo-v5.css").read_text(encoding="utf-8")
+          production_logo_svg = Path("static/images/inclume-app-icon.svg").read_text(encoding="utf-8")
+          preview_logo_svg = Path("preview-v2/static/images/inclume-app-icon.svg").read_text(encoding="utf-8")
+          assert production_logo_css == preview_logo_css, "La preview debe usar los mismos estilos de marca."
+          assert production_logo_svg == preview_logo_svg, "La preview debe usar el mismo logo SVG."
+          assert "silla de ruedas" in production_logo_svg
           PY
           node --check /tmp/inclume-preview.js
 
