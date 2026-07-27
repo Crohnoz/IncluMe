@@ -31,6 +31,8 @@ Para probarla:
 5. Guarda el punto de prueba y revísalo en la lista o el mapa.
 6. Abre Google Maps o Waze con el geotag exacto.
 
+La preview sirve para validar el flujo. En el producto Django, el aporte real queda pendiente de revisión antes de aparecer públicamente.
+
 ## Desarrollo local
 
 ```bash
