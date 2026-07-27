@@ -3,7 +3,13 @@ services:
     name: inclume-app
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py check --deploy && python manage.py collectstatic --noinput && python manage.py migrate
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python manage.py check --deploy &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate &&
+      python manage.py createcachetable inclume_cache &&
+      python manage.py bootstrap_admin --require
     startCommand: gunicorn --workers 2 --threads 2 --timeout 60 --access-logfile - --error-logfile - IncluMe.wsgi:application
     healthCheckPath: /health/
     envVars:
@@ -19,11 +25,23 @@ services:
         value: https://inclume-app.onrender.com
       - key: SECURE_HSTS_SECONDS
         value: "31536000"
+      - key: CACHE_BACKEND
+        value: database
       - key: DATABASE_URL
-        fromDatabase:
-          name: inclume-db
-          property: connectionString
-
-databases:
-  - name: inclume-db
-    plan: free
+        sync: false
+      - key: INCLUME_ADMIN_USERNAME
+        sync: false
+      - key: INCLUME_ADMIN_EMAIL
+        sync: false
+      - key: INCLUME_ADMIN_PASSWORD
+        sync: false
+      - key: GEOCODING_URL
+        value: https://nominatim.openstreetmap.org/search
+      - key: GEOCODING_REFERER
+        value: https://github.com/Crohnoz/IncluMe
+      - key: GEOCODING_USER_AGENT
+        value: IncluMe/0.1 (+https://github.com/Crohnoz/IncluMe)
+      - key: MAP_TILE_URL
+        value: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+      - key: MAP_TILE_ATTRIBUTION
+        value: "&copy; OpenStreetMap contributors"
