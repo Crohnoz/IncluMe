@@ -4,83 +4,603 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estacionamientos Accesibles</title>
+    <meta name="description" content="Mapa comunitario de estacionamientos accesibles y verificados.">
+    <title>Estacionamientos accesibles | IncluMe</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpCWwg18XxVjYSTwsbHji3vdYHwbRzZ5I&callback=initMap">
-</script>
-
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        crossorigin=""
+    >
     <style>
+        :root {
+            --inclume-primary: #2155a3;
+            --inclume-primary-dark: #153b74;
+            --inclume-surface: #ffffff;
+            --inclume-background: #f3f6fa;
+            --inclume-text: #172033;
+            --inclume-muted: #5d687a;
+            --inclume-border: #d8dee9;
+            --inclume-success: #176b45;
+            --inclume-warning: #8a5a00;
+            --inclume-unavailable: #8b2f39;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: var(--inclume-text);
+            background: var(--inclume-background);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -60px;
+            left: 1rem;
+            z-index: 2000;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            background: var(--inclume-primary-dark);
+            border-radius: 0.5rem;
+        }
+
+        .skip-link:focus {
+            top: 1rem;
+        }
+
+        .parking-header {
+            background: var(--inclume-surface);
+            border-bottom: 1px solid var(--inclume-border);
+        }
+
+        .parking-nav {
+            width: min(1180px, calc(100% - 2rem));
+            margin: 0 auto;
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .parking-nav .logo {
+            width: auto;
+            max-height: 48px;
+        }
+
+        .parking-nav ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .parking-nav a {
+            color: var(--inclume-text);
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .parking-nav a:hover,
+        .parking-nav a:focus-visible {
+            color: var(--inclume-primary);
+            text-decoration: underline;
+        }
+
+        .parking-main {
+            width: min(1180px, calc(100% - 2rem));
+            margin: 0 auto;
+            padding: 2rem 0 3rem;
+        }
+
+        .parking-hero {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .parking-hero h1 {
+            max-width: 780px;
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.05;
+        }
+
+        .parking-hero p {
+            max-width: 760px;
+            margin: 0;
+            color: var(--inclume-muted);
+            font-size: 1.08rem;
+            line-height: 1.6;
+        }
+
+        .parking-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .button {
+            min-height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--inclume-primary);
+            border-radius: 0.65rem;
+            color: #fff;
+            background: var(--inclume-primary);
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .button:hover,
+        .button:focus-visible {
+            background: var(--inclume-primary-dark);
+            border-color: var(--inclume-primary-dark);
+        }
+
+        .button-secondary {
+            color: var(--inclume-primary-dark);
+            background: transparent;
+        }
+
+        .button-secondary:hover,
+        .button-secondary:focus-visible {
+            color: #fff;
+        }
+
+        .status-message {
+            min-height: 1.5rem;
+            margin: 0 0 1rem;
+            color: var(--inclume-muted);
+            font-weight: 600;
+        }
+
+        .parking-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .map-panel,
+        .list-panel {
+            overflow: hidden;
+            background: var(--inclume-surface);
+            border: 1px solid var(--inclume-border);
+            border-radius: 1rem;
+            box-shadow: 0 12px 35px rgba(24, 39, 75, 0.08);
+        }
+
         #map {
-            height: 80vh; /* Ajusta la altura según lo que necesites */
             width: 100%;
-            margin: 20px 0;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-height: 620px;
+        }
+
+        .list-panel {
+            max-height: 620px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--inclume-border);
+        }
+
+        .list-panel-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .parking-list {
+            display: grid;
+            gap: 0.75rem;
+            padding: 1rem;
+            margin: 0;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .parking-card {
+            padding: 1rem;
+            border: 1px solid var(--inclume-border);
+            border-radius: 0.8rem;
+            background: #fff;
+        }
+
+        .parking-card h3 {
+            margin: 0 0 0.35rem;
+            font-size: 1.05rem;
+        }
+
+        .parking-card p {
+            margin: 0.3rem 0;
+            color: var(--inclume-muted);
+            line-height: 1.45;
+        }
+
+        .parking-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+
+        .parking-card-actions .button {
+            min-height: 38px;
+            padding: 0.45rem 0.7rem;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 0.25rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 750;
+            background: #e8edf5;
+        }
+
+        .badge-verified {
+            color: var(--inclume-success);
+            background: #e4f4ec;
+        }
+
+        .badge-pending {
+            color: var(--inclume-warning);
+            background: #fff2d2;
+        }
+
+        .badge-unavailable {
+            color: var(--inclume-unavailable);
+            background: #fbe5e8;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            padding: 0;
+            margin: 0.65rem 0 0;
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 0.25rem 0.45rem;
+            color: var(--inclume-primary-dark);
+            background: #eaf1fb;
+            border-radius: 0.4rem;
+            font-size: 0.78rem;
+        }
+
+        .empty-state {
+            padding: 1rem;
+            color: var(--inclume-muted);
+        }
+
+        .leaflet-popup-content {
+            min-width: 230px;
+        }
+
+        .leaflet-popup-content h3 {
+            margin: 0 0 0.35rem;
+        }
+
+        .parking-footer {
+            padding: 1.5rem 1rem;
+            text-align: center;
+            color: var(--inclume-muted);
+            background: var(--inclume-surface);
+            border-top: 1px solid var(--inclume-border);
+        }
+
+        @media (max-width: 850px) {
+            .parking-layout {
+                grid-template-columns: 1fr;
+            }
+
+            #map {
+                min-height: 480px;
+            }
+
+            .list-panel {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .parking-nav {
+                padding: 0.75rem 0;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .parking-main {
+                width: min(100% - 1rem, 1180px);
+                padding-top: 1.25rem;
+            }
+
+            #map {
+                min-height: 400px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <header>
-        <nav>
-            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
+    <a class="skip-link" href="#parking-list">Saltar a la lista de estacionamientos</a>
+
+    <header class="parking-header">
+        <nav class="parking-nav" aria-label="Navegación principal">
+            <a href="/" aria-label="Ir al inicio de IncluMe">
+                <img src="{% static 'images/inclumelogo.png' %}" alt="IncluMe" class="logo">
+            </a>
             <ul>
                 <li><a href="/">Inicio</a></li>
+                <li><a href="/parking/" aria-current="page">Estacionamientos</a></li>
                 <li><a href="/resources/">Recursos</a></li>
                 <li><a href="/contact/">Contacto</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Contenido principal -->
-    <main>
-        <h1>Encuentra Estacionamientos Accesibles</h1>
-        <p>Selecciona un estacionamiento en el mapa para obtener más información y abrir la ubicación en Waze.</p>
-        
-        <!-- Mapa -->
-        <div id="map"></div>
+    <main class="parking-main">
+        <section class="parking-hero" aria-labelledby="parking-title">
+            <h1 id="parking-title">Encuentra estacionamientos accesibles, verificados por la comunidad.</h1>
+            <p>
+                Consulta ubicación, acceso real, espacio de transferencia y fecha de verificación.
+                La lista ubicada junto al mapa entrega la misma información en un formato accesible.
+            </p>
+            <div class="parking-actions">
+                <button class="button" id="locate-button" type="button">Usar mi ubicación</button>
+                <a class="button button-secondary" href="#parking-list">Revisar la lista</a>
+            </div>
+        </section>
+
+        <p class="status-message" id="map-status" role="status" aria-live="polite">
+            Cargando estacionamientos…
+        </p>
+
+        <div class="parking-layout">
+            <section class="map-panel" aria-label="Mapa de estacionamientos accesibles">
+                <div id="map" role="application" aria-label="Mapa interactivo de estacionamientos accesibles"></div>
+            </section>
+
+            <section class="list-panel" aria-labelledby="parking-list-title">
+                <div class="list-panel-header">
+                    <h2 id="parking-list-title">Lugares encontrados</h2>
+                </div>
+                <ul class="parking-list" id="parking-list"></ul>
+            </section>
+        </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 IncluMe. Todos los derechos reservados.</p>
-        <div>
-            Síguenos en:
-            <a href="https://facebook.com/IncluMe" target="_blank"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://twitter.com/IncluMe" target="_blank"><i class="fab fa-twitter"></i></a>
-            <a href="https://instagram.com/IncluMe" target="_blank"><i class="fab fa-instagram"></i></a>
-        </div>
+    <footer class="parking-footer">
+        <p>© 2026 IncluMe. Accesibilidad construida con información comunitaria.</p>
     </footer>
-    
 
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        crossorigin=""
+    ></script>
     <script>
-        function initMap() {
-            // Configuración inicial del mapa
-            const map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: -33.4489, lng: -70.6693 }, // Santiago, Chile
-                zoom: 12,
-            });
-    
-            // Ejemplo de marcador en Santiago
-            const marker = new google.maps.Marker({
-                position: { lat: -33.4489, lng: -70.6693 },
-                map: map,
-                title: "Estacionamiento accesible",
-            });
-    
-            // Evento para abrir Waze al hacer clic en el marcador
-            marker.addListener("click", () => {
-                window.open(
-                    `https://www.waze.com/ul?ll=${marker.getPosition().lat()},${marker.getPosition().lng()}&navigate=yes`,
-                    "_blank"
-                );
-            });
+        const parkingApiUrl = "{% url 'parking_data' %}";
+        const defaultCenter = [-33.4489, -70.6693];
+        const map = L.map("map", { scrollWheelZoom: false }).setView(defaultCenter, 12);
+        const markerLayer = L.layerGroup().addTo(map);
+        const markerByParkingId = new Map();
+        const parkingList = document.getElementById("parking-list");
+        const statusMessage = document.getElementById("map-status");
+        const locateButton = document.getElementById("locate-button");
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+
+        function statusClass(status) {
+            if (status === "verified") return "badge badge-verified";
+            if (status === "unavailable") return "badge badge-unavailable";
+            return "badge badge-pending";
         }
+
+        function formatVerificationDate(value) {
+            if (!value) return "Sin verificación reciente";
+            const date = new Date(value);
+            return `Verificado el ${new Intl.DateTimeFormat("es-CL", {
+                dateStyle: "medium",
+            }).format(date)}`;
+        }
+
+        function navigationUrl(item, provider) {
+            const destination = `${item.latitude},${item.longitude}`;
+            if (provider === "waze") {
+                return `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
+            }
+            return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+        }
+
+        function createFeatureList(features) {
+            if (!features.length) return null;
+            const list = document.createElement("ul");
+            list.className = "feature-list";
+            features.forEach((feature) => {
+                const item = document.createElement("li");
+                item.textContent = feature;
+                list.appendChild(item);
+            });
+            return list;
+        }
+
+        function createPopup(item) {
+            const container = document.createElement("div");
+            const title = document.createElement("h3");
+            const location = document.createElement("p");
+            const status = document.createElement("span");
+            const verification = document.createElement("p");
+            const route = document.createElement("a");
+
+            title.textContent = item.name;
+            location.textContent = item.location;
+            status.className = statusClass(item.status);
+            status.textContent = item.status_label;
+            verification.textContent = formatVerificationDate(item.last_verified_at);
+            route.href = navigationUrl(item, "google");
+            route.target = "_blank";
+            route.rel = "noopener noreferrer";
+            route.textContent = "Abrir ruta";
+
+            container.append(title, location, status, verification);
+            const features = createFeatureList(item.features);
+            if (features) container.appendChild(features);
+            container.appendChild(route);
+            return container;
+        }
+
+        function focusParking(item) {
+            const marker = markerByParkingId.get(item.id);
+            map.setView([item.latitude, item.longitude], 17);
+            if (marker) marker.openPopup();
+            document.getElementById(`parking-${item.id}`)?.focus();
+        }
+
+        function createParkingCard(item) {
+            const card = document.createElement("li");
+            const title = document.createElement("h3");
+            const location = document.createElement("p");
+            const type = document.createElement("p");
+            const status = document.createElement("span");
+            const verification = document.createElement("p");
+            const actions = document.createElement("div");
+            const showButton = document.createElement("button");
+            const wazeLink = document.createElement("a");
+
+            card.className = "parking-card";
+            card.id = `parking-${item.id}`;
+            card.tabIndex = -1;
+            title.textContent = item.name;
+            location.textContent = item.location;
+            type.textContent = item.place_type;
+            status.className = statusClass(item.status);
+            status.textContent = item.status_label;
+            verification.textContent = `${formatVerificationDate(item.last_verified_at)} · ${item.verification_count} confirmaciones`;
+
+            const features = createFeatureList(item.features);
+
+            actions.className = "parking-card-actions";
+            showButton.className = "button button-secondary";
+            showButton.type = "button";
+            showButton.textContent = "Ver en mapa";
+            showButton.addEventListener("click", () => focusParking(item));
+
+            wazeLink.className = "button";
+            wazeLink.href = navigationUrl(item, "waze");
+            wazeLink.target = "_blank";
+            wazeLink.rel = "noopener noreferrer";
+            wazeLink.textContent = "Abrir en Waze";
+
+            actions.append(showButton, wazeLink);
+            card.append(title, location, type, status, verification);
+            if (features) card.appendChild(features);
+            card.appendChild(actions);
+            return card;
+        }
+
+        async function loadParkings() {
+            try {
+                const response = await fetch(parkingApiUrl, {
+                    headers: { Accept: "application/json" },
+                });
+                if (!response.ok) throw new Error("No fue posible cargar la información.");
+
+                const data = await response.json();
+                parkingList.replaceChildren();
+                markerLayer.clearLayers();
+                markerByParkingId.clear();
+
+                if (!data.parkings.length) {
+                    const empty = document.createElement("li");
+                    empty.className = "empty-state";
+                    empty.textContent = "Todavía no existen estacionamientos georreferenciados. Puedes agregarlos desde el panel administrativo.";
+                    parkingList.appendChild(empty);
+                    statusMessage.textContent = "No hay estacionamientos disponibles en la base de datos.";
+                    return;
+                }
+
+                const bounds = [];
+                data.parkings.forEach((item) => {
+                    const coordinates = [item.latitude, item.longitude];
+                    const marker = L.marker(coordinates).addTo(markerLayer);
+                    marker.bindPopup(createPopup(item));
+                    markerByParkingId.set(item.id, marker);
+                    parkingList.appendChild(createParkingCard(item));
+                    bounds.push(coordinates);
+                });
+
+                if (bounds.length > 1) {
+                    map.fitBounds(bounds, { padding: [35, 35] });
+                } else {
+                    map.setView(bounds[0], 16);
+                }
+
+                statusMessage.textContent = `${data.count} estacionamientos disponibles en el mapa.`;
+            } catch (error) {
+                statusMessage.textContent = "No pudimos cargar los estacionamientos. Intenta nuevamente más tarde.";
+                const empty = document.createElement("li");
+                empty.className = "empty-state";
+                empty.textContent = error.message;
+                parkingList.replaceChildren(empty);
+            }
+        }
+
+        locateButton.addEventListener("click", () => {
+            if (!navigator.geolocation) {
+                statusMessage.textContent = "Este dispositivo no permite obtener tu ubicación.";
+                return;
+            }
+
+            statusMessage.textContent = "Buscando tu ubicación…";
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const coordinates = [
+                        position.coords.latitude,
+                        position.coords.longitude,
+                    ];
+                    map.setView(coordinates, 16);
+                    L.circleMarker(coordinates, {
+                        radius: 9,
+                        weight: 3,
+                        fillOpacity: 0.7,
+                    })
+                        .addTo(map)
+                        .bindPopup("Tu ubicación aproximada")
+                        .openPopup();
+                    statusMessage.textContent = "Ubicación encontrada. Revisa los estacionamientos cercanos.";
+                },
+                () => {
+                    statusMessage.textContent = "No fue posible obtener tu ubicación. Puedes navegar manualmente por el mapa.";
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000,
+                },
+            );
+        });
+
+        loadParkings();
     </script>
-    
 </body>
 </html>
