@@ -35,17 +35,25 @@
     }
 
     function applyPreferences(preferences) {
+        const reduced = Boolean(preferences.reduceMotion);
         document.body.dataset.textScale = preferences.textScale;
         document.body.dataset.highContrast = String(Boolean(preferences.highContrast));
         document.body.dataset.mapStyle = preferences.mapStyle;
         document.body.dataset.spacing = preferences.spacing;
-        document.documentElement.dataset.reduceMotion = String(Boolean(preferences.reduceMotion));
+        document.documentElement.dataset.reduceMotion = String(reduced);
+        document.documentElement.dataset.reducedMotion = String(reduced);
 
         openButton.setAttribute(
             "aria-label",
-            preferences.highContrast || preferences.textScale !== "standard" || preferences.reduceMotion
+            preferences.highContrast || preferences.textScale !== "standard" || reduced
                 ? "Accesibilidad, preferencias personalizadas activas"
                 : "Abrir preferencias de accesibilidad",
+        );
+
+        window.dispatchEvent(
+            new CustomEvent("inclume:preferences-changed", {
+                detail: { ...preferences, reduceMotion: reduced },
+            }),
         );
     }
 
