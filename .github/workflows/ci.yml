@@ -42,6 +42,7 @@ jobs:
         run: |
           node --check static/parking.js
           node --check static/parking-resilience.js
+          node --check static/motion.js
           node --check static/service-worker.js
       - name: Validate web manifest JSON
         run: python -m json.tool static/manifest.webmanifest > /dev/null
