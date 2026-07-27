@@ -42,22 +42,31 @@ jobs:
         run: |
           node --check static/parking.js
           node --check static/parking-resilience.js
+          node --check static/parking-geotag.js
           node --check static/motion.js
           node --check static/service-worker.js
-      - name: Validate interactive preview
+          node --check preview-v2/app.js
+      - name: Validate interactive previews
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
 
-          html = Path("preview/index.html").read_text(encoding="utf-8")
-          assert html.lstrip().lower().startswith("<!doctype html>")
-          assert 'lang="es-CL"' in html
-          assert 'id="main"' in html
-          scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.DOTALL | re.IGNORECASE)
+          legacy = Path("preview/index.html").read_text(encoding="utf-8")
+          assert legacy.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in legacy
+          assert 'id="main"' in legacy
+          scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", legacy, re.DOTALL | re.IGNORECASE)
           inline = "\n".join(script for script in scripts if script.strip())
-          assert inline.strip(), "La preview debe contener interacción JavaScript."
+          assert inline.strip(), "La preview original debe contener interacción JavaScript."
           Path("/tmp/inclume-preview.js").write_text(inline, encoding="utf-8")
+
+          current = Path("preview-v2/index.html").read_text(encoding="utf-8")
+          assert current.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in current
+          assert 'id="map"' in current
+          assert 'id="pin-mode"' in current
+          assert 'app.js' in current and 'styles.css' in current
           PY
           node --check /tmp/inclume-preview.js
       - name: Validate web manifest JSON
