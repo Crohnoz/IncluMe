@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="{% static 'parking-v3.css' %}">
     <link rel="stylesheet" href="{% static 'motion.css' %}">
     <link rel="stylesheet" href="{% static 'inclusive-v4.css' %}">
+    <link rel="stylesheet" href="{% static 'parking-geotag.css' %}">
+    <link rel="stylesheet" href="{% static 'parking-geotag-v4.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body data-text-scale="standard" data-high-contrast="false" data-map-style="vivid" data-spacing="standard">
@@ -118,6 +120,7 @@
     <script src="{% static 'accessibility-controls.js' %}" defer></script>
     <script src="{% static 'motion.js' %}" defer></script>
     <script src="{% static 'parking-resilience.js' %}" defer></script>
+    <script src="{% static 'parking-geotag-v4.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
