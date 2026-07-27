@@ -76,6 +76,7 @@ jobs:
           node --check static/parking.js
           node --check static/parking-resilience.js
           node --check static/parking-geotag-v4.js
+          node --check static/destination-search.js
           node --check static/accessibility-controls.js
           node --check static/motion.js
           node --check static/service-worker.js
@@ -107,6 +108,13 @@ jobs:
           assert 'a11y-bootstrap.js' in current
           assert 'app-v4.js' in current
           assert 'inclusive.css' in current
+
+          functional = Path("templates/destination_search.html").read_text(encoding="utf-8")
+          assert 'name="q"' in functional
+          assert 'autocomplete="off"' in functional
+          assert 'id="destination-map"' in functional
+          assert 'Abrir Waze' in functional
+          assert 'No ingreses domicilios particulares' in functional
 
           production_logo_css = Path("static/logo-v5.css").read_text(encoding="utf-8")
           preview_logo_css = Path("preview-v2/static/logo-v5.css").read_text(encoding="utf-8")
