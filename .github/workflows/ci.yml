@@ -116,6 +116,17 @@ jobs:
           assert 'Abrir Waze' in functional
           assert 'No ingreses domicilios particulares' in functional
 
+          municipal = Path("preview-v2/municipalidades.html").read_text(encoding="utf-8")
+          assert municipal.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in municipal
+          assert 'id="metrics"' in municipal
+          assert 'id="export"' in municipal
+          assert "todos los lugares de esta página son ficticios" in municipal
+          municipal_scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", municipal, re.DOTALL | re.IGNORECASE)
+          municipal_inline = "\n".join(script for script in municipal_scripts if script.strip())
+          assert municipal_inline.strip(), "La demo municipal debe contener interacción JavaScript."
+          Path("/tmp/inclume-municipal-preview.js").write_text(municipal_inline, encoding="utf-8")
+
           production_logo_css = Path("static/logo-v5.css").read_text(encoding="utf-8")
           preview_logo_css = Path("preview-v2/static/logo-v5.css").read_text(encoding="utf-8")
           production_logo_svg = Path("static/images/inclume-app-icon.svg").read_text(encoding="utf-8")
@@ -125,6 +136,7 @@ jobs:
           assert "silla de ruedas" in production_logo_svg
           PY
           node --check /tmp/inclume-preview.js
+          node --check /tmp/inclume-municipal-preview.js
 
       - name: Run browser and automated accessibility tests
         id: browser_tests
