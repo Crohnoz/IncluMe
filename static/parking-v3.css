@@ -1,0 +1,152 @@
+/* IncluMe v3: trust, saved places and connection resilience. */
+
+.resilience-banner {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    margin-top: 0.65rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-navy);
+    background: var(--color-blue-soft);
+    font-weight: 700;
+}
+
+.resilience-banner.is-offline {
+    color: var(--color-amber);
+    border-color: #d8a54c;
+    background: var(--color-amber-soft);
+}
+
+.resilience-banner.is-syncing {
+    color: var(--color-success);
+    border-color: #8cc7ad;
+    background: #e7f7ef;
+}
+
+.saved-places-button {
+    margin-inline-start: auto;
+}
+
+.save-place-button[aria-pressed="true"] {
+    color: var(--color-success);
+    border-color: #8cc7ad;
+    background: #e7f7ef;
+}
+
+.parking-card__issue {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem;
+    border: 1px solid #d8a54c;
+    border-radius: var(--radius-sm);
+    color: var(--color-amber);
+    background: var(--color-amber-soft);
+}
+
+.parking-card__issue strong {
+    font-family: var(--font-display);
+    font-weight: 800;
+}
+
+.parking-card__issue span {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
+.saved-places-list {
+    display: grid;
+    gap: 0.75rem;
+    padding-block: 1rem 1.25rem;
+}
+
+.saved-place {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+}
+
+.saved-place h3 {
+    margin: 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+}
+
+.saved-place p,
+.saved-places-empty {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.saved-place__actions,
+.duplicate-warning__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.35rem;
+}
+
+.saved-place__actions .button,
+.saved-place__actions .text-button,
+.duplicate-warning__actions .button {
+    min-height: 44px;
+}
+
+.duplicate-warning {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 2px solid #d8a54c;
+    border-radius: var(--radius-md);
+    background: var(--color-amber-soft);
+}
+
+.duplicate-warning h3 {
+    margin: 0;
+    color: var(--color-amber);
+    font-family: var(--font-display);
+}
+
+.duplicate-warning p {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.duplicate-warning ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding-inline-start: 1.2rem;
+    color: var(--color-ink);
+}
+
+body[data-high-contrast="true"] .parking-card__issue,
+body[data-high-contrast="true"] .duplicate-warning,
+body[data-high-contrast="true"] .resilience-banner {
+    border-width: 2px;
+}
+
+@media (max-width: 680px) {
+    .saved-places-button {
+        width: 100%;
+        margin-inline-start: 0;
+    }
+
+    .saved-place__actions,
+    .duplicate-warning__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .saved-place__actions .button,
+    .saved-place__actions .text-button,
+    .duplicate-warning__actions .button {
+        width: 100%;
+    }
+}
