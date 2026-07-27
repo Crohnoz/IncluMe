@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Panel municipal | IncluMe{% endblock %}
+{% block meta_description %}Panel interno de cobertura, vigencia e incidencias del catálogo accesible de IncluMe.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'municipal.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="section-shell municipal-dashboard">
+    <div class="municipal-dashboard__header">
+        <div>
+            <span class="eyebrow">Acceso de equipo</span>
+            <h1>Panel municipal del piloto</h1>
+            <p>Revisa cobertura, señales de confianza y registros que necesitan actualización. Este panel no afirma disponibilidad en tiempo real.</p>
+        </div>
+        <a class="button button--secondary" href="{% url 'municipalities' %}">Ver presentación pública</a>
+    </div>
+
+    <form class="municipal-filter" method="get" role="search">
+        <label for="territory-filter">
+            <span>Filtrar territorio o referencia</span>
+            <input id="territory-filter" type="search" name="territory" value="{{ territory_query }}" placeholder="Ej.: Temuco, Ñuñoa, hospital, municipalidad">
+        </label>
+        <button class="button button--primary" type="submit">Aplicar filtro</button>
+        {% if territory_query %}<a class="button button--secondary" href="{% url 'municipal_dashboard' %}">Limpiar</a>{% endif %}
+        <a class="button button--secondary" href="{% url 'municipal_export_csv' %}{% if territory_query %}?territory={{ territory_query|urlencode }}{% endif %}">Exportar CSV</a>
+    </form>
+
+    <div class="municipal-metrics municipal-metrics--compact">
+        <article><strong>{{ metrics.published_count }}</strong><span>publicados</span></article>
+        <article><strong>{{ metrics.verified_count }}</strong><span>verificados</span></article>
+        <article><strong>{{ metrics.positive_confirmations }}</strong><span>confirmaciones</span></article>
+        <article><strong>{{ metrics.issue_reports }}</strong><span>incidencias</span></article>
+        <article><strong>{{ metrics.stale_count }}</strong><span>requieren actualización</span></article>
+        <article><strong>{{ metrics.unavailable_count }}</strong><span>no disponibles</span></article>
+    </div>
+
+    <div class="municipal-table-wrap">
+        <table class="municipal-table">
+            <caption>Estacionamientos aprobados{% if territory_query %} que coinciden con “{{ territory_query }}”{% endif %}. Actualizado {{ generated_at|date:"d/m/Y H:i" }}.</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Lugar</th>
+                    <th scope="col">Condiciones</th>
+                    <th scope="col">Confianza</th>
+                    <th scope="col">Vigencia</th>
+                    <th scope="col">Incidencias</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td data-label="Lugar">
+                            <strong>{{ row.parking.name }}</strong>
+                            <span>{{ row.parking.location }}</span>
+                            <small>{{ row.parking.get_place_type_display }}</small>
+                        </td>
+                        <td data-label="Condiciones">
+                            {% if row.parking.distance_to_entrance_m != None %}<span>{{ row.parking.distance_to_entrance_m }} m a la entrada</span>{% endif %}
+                            <span>Ruta sin escalones: {{ row.parking.has_step_free_route|yesno:"Sí,No,Sin informar" }}</span>
+                            <span>Transferencia: {{ row.parking.get_transfer_side_display }}</span>
+                        </td>
+                        <td data-label="Confianza">
+                            <strong>{{ row.trust_level }}</strong>
+                            <span>{{ row.parking.verification_count }} confirmaciones</span>
+                        </td>
+                        <td data-label="Vigencia">
+                            <strong>{{ row.freshness }}</strong>
+                            <span>{% if row.parking.last_verified_at %}{{ row.parking.last_verified_at|date:"d/m/Y H:i" }}{% else %}Sin confirmación{% endif %}</span>
+                        </td>
+                        <td data-label="Incidencias">
+                            <strong>{{ row.parking.issue_report_count }}</strong>
+                            <span>{{ row.availability_signal }}</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <a href="{% url 'moderation_detail' row.parking.pk %}">Revisar ficha</a>
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ row.parking.latitude }},{{ row.parking.longitude }}" rel="noopener">Ver coordenada</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">No hay registros aprobados que coincidan con el filtro.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if result_limit_reached %}<p class="municipal-note">La pantalla muestra los primeros 250 registros. Utiliza el filtro o exporta CSV para revisar el conjunto completo.</p>{% endif %}
+</section>
+{% endblock %}
