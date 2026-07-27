@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "inclume-v8-wheelchair-brand-2026-07-27";
+const CACHE_VERSION = "inclume-v9-functional-search-2026-07-27";
 const NAVIGATION_FALLBACK = "/parking/";
 const CORE_ASSETS = [
     NAVIGATION_FALLBACK,
@@ -9,6 +9,8 @@ const CORE_ASSETS = [
     "/static/parking-v3.css",
     "/static/inclusive-v4.css",
     "/static/logo-v5.css",
+    "/static/destination-search.css",
+    "/static/destination-search.js",
     "/static/parking-geotag.css",
     "/static/parking-geotag-v4.css",
     "/static/motion.css",
@@ -90,7 +92,7 @@ self.addEventListener("fetch", (event) => {
         return;
     }
 
-    if (url.pathname === "/api/parkings/") {
+    if (url.pathname === "/api/parkings/" || url.pathname === "/api/parkings/nearby/") {
         event.respondWith(networkFirst(request));
         return;
     }
