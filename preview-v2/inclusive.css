@@ -111,7 +111,7 @@ html[data-high-contrast="true"] {
 .badge { border: 1px solid #b7d4ee; background: var(--soft); }
 .badge:nth-child(2n) { border-color: #b7e0d7; background: var(--mint); }
 .badge--pending { color: #4e3196; border-color: #cfc0f2; background: var(--lavender); }
-.badge--warning { color: var(--warning); border-color: #e2bd69; background: var(--warning-soft); }
+.badge--warning { color: #6d3f00 !important; border-color: #d7a640; background: #fff6df !important; }
 
 #map { background: #dcecf5; }
 #map .leaflet-tile-pane { filter: grayscale(.14) saturate(.88) brightness(1.03) contrast(.98); }
