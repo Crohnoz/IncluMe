@@ -14,7 +14,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       DEBUG: "true"
       SECRET_KEY: ci-only-secret-key
@@ -23,29 +23,48 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-      - name: Install dependencies
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
+
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
       - name: Check Python syntax
         run: python -m compileall -q .
+
       - name: Check migrations
         run: python manage.py makemigrations --check --dry-run
+
       - name: Django system check
         run: python manage.py check
-      - name: Run tests
+
+      - name: Run Django tests
         run: python manage.py test
+
       - name: Check JavaScript syntax
         run: |
           node --check static/parking.js
           node --check static/parking-resilience.js
-          node --check static/parking-geotag.js
+          node --check static/parking-geotag-v4.js
+          node --check static/accessibility-controls.js
           node --check static/motion.js
           node --check static/service-worker.js
-          node --check preview-v2/app.js
+          node --check preview-v2/app-v4.js
+
       - name: Validate interactive previews
         run: |
           python - <<'PY'
@@ -66,8 +85,14 @@ jobs:
           assert 'lang="es-CL"' in current
           assert 'id="map"' in current
           assert 'id="pin-mode"' in current
-          assert 'app.js' in current and 'styles.css' in current
+          assert 'id="accessibility-dialog"' in current
+          assert 'app-v4.js' in current
+          assert 'inclusive.css' in current
           PY
           node --check /tmp/inclume-preview.js
+
+      - name: Run browser and automated accessibility tests
+        run: npm run test:browser
+
       - name: Validate web manifest JSON
         run: python -m json.tool static/manifest.webmanifest > /dev/null
