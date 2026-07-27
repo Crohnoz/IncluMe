@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123b5d">
+  <meta name="description" content="Preview interactiva de IncluMe para marcar y revisar estacionamientos accesibles en Chile.">
+  <title>IncluMe — Mapa accesible de Chile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido principal</a>
+  <header class="topbar">
+    <div class="shell topbar__inner">
+      <a class="brand" href="#main" aria-label="IncluMe, ir al mapa">
+        <span class="brand__mark" aria-hidden="true">I</span>
+        <span>IncluMe</span>
+      </a>
+      <button class="button button--quiet" id="motion-toggle" type="button" aria-pressed="false">Reducir movimiento</button>
+    </div>
+  </header>
+
+  <main id="main" class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <span class="eyebrow">Preview funcional · Chile</span>
+      <h1 id="page-title">Marca el estacionamiento accesible exacto.</h1>
+      <p>IncluMe guarda el geotag preciso, muestra las condiciones observadas y después abre Waze, Google Maps o la aplicación de navegación del teléfono.</p>
+      <div class="demo-warning" role="note">
+        <strong>Datos de demostración.</strong> Los puntos iniciales solo permiten probar la interfaz y no representan estacionamientos verificados.
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Controles del mapa">
+      <label class="search-field" for="search">
+        <span>Buscar en los puntos mostrados</span>
+        <input id="search" type="search" placeholder="Ej.: Temuco, clínica o acceso norte" autocomplete="off">
+      </label>
+      <div class="controls__actions">
+        <button class="button button--primary" id="locate" type="button">Usar mi ubicación</button>
+        <button class="button button--secondary" id="pin-mode" type="button" aria-pressed="false">Marcar estacionamiento</button>
+        <button class="button button--quiet" id="show-chile" type="button">Ver Chile</button>
+      </div>
+      <p class="live-status" id="live-status" role="status" aria-live="polite">Mapa listo. Puedes revisar un punto o marcar uno nuevo.</p>
+    </section>
+
+    <div class="view-switch" aria-label="Vista en dispositivo móvil">
+      <button class="view-button is-active" type="button" data-view="list" aria-pressed="true">Lista</button>
+      <button class="view-button" type="button" data-view="map" aria-pressed="false">Mapa</button>
+    </div>
+
+    <section class="workspace" id="workspace" data-view="split">
+      <section class="results panel" aria-labelledby="results-title">
+        <div class="panel__header">
+          <div>
+            <h2 id="results-title">Puntos en Chile</h2>
+            <p id="result-count">Cargando puntos…</p>
+          </div>
+          <span class="status-chip">Geotags</span>
+        </div>
+        <ol class="parking-list" id="parking-list"></ol>
+        <div class="empty-state" id="empty-state" hidden>
+          <h3>No encontramos coincidencias</h3>
+          <p>Prueba otra búsqueda o marca un nuevo punto en el mapa.</p>
+        </div>
+      </section>
+
+      <section class="map-panel panel" aria-label="Mapa interactivo de Chile">
+        <div class="map-help" id="map-help">
+          <strong>Mapa de Chile</strong>
+          <span>Los colores fuertes se reservan para los marcadores.</span>
+        </div>
+        <div id="map" aria-label="Mapa para revisar y marcar estacionamientos accesibles"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog class="sheet" id="parking-dialog" aria-labelledby="dialog-title">
+    <form id="parking-form">
+      <div class="sheet__header">
+        <div>
+          <span class="status-chip">Nuevo aporte local</span>
+          <h2 id="dialog-title">Describe el punto marcado</h2>
+          <p id="dialog-coordinates"></p>
+        </div>
+        <button class="close-button" type="button" data-close aria-label="Cerrar">×</button>
+      </div>
+      <div class="sheet__body">
+        <label class="field">
+          <span>Nombre o destino</span>
+          <input name="name" maxlength="120" required placeholder="Ej.: Hospital Regional de Temuco">
+        </label>
+        <label class="field">
+          <span>Referencia exacta</span>
+          <input name="location" maxlength="180" required placeholder="Ej.: acceso norte, espacio junto a la rampa">
+        </label>
+        <div class="form-grid">
+          <label class="field">
+            <span>Lado de transferencia</span>
+            <select name="transferSide">
+              <option value="unknown">No informado</option>
+              <option value="right">Derecho</option>
+              <option value="left">Izquierdo</option>
+              <option value="both">Ambos lados</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Ruta hasta la entrada</span>
+            <select name="stepFree">
+              <option value="unknown">No informado</option>
+              <option value="yes">Sin escalones</option>
+              <option value="no">Tiene escalones u obstáculo</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">
+          <span>Observación</span>
+          <textarea name="notes" rows="3" maxlength="400" placeholder="Describe señalización, superficie, rampa o acceso. No incluyas patentes ni datos personales."></textarea>
+        </label>
+        <p class="privacy-note">Este preview guarda el punto solamente en tu navegador. En la aplicación real quedará pendiente de moderación antes de publicarse.</p>
+        <div class="sheet__actions">
+          <button class="button button--quiet" type="button" data-close>Cancelar</button>
+          <button class="button button--primary" type="submit">Guardar punto de prueba</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="sheet" id="detail-dialog" aria-labelledby="detail-title">
+    <div class="sheet__header">
+      <div>
+        <span class="status-chip" id="detail-status">Información</span>
+        <h2 id="detail-title">Detalle del punto</h2>
+      </div>
+      <button class="close-button" type="button" data-close aria-label="Cerrar">×</button>
+    </div>
+    <div class="sheet__body" id="detail-body"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <footer class="footer">
+    <div class="shell">
+      <strong>IncluMe</strong>
+      <p>Información comunitaria para tomar decisiones de accesibilidad con menor incertidumbre.</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
