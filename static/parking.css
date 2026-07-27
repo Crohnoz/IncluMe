@@ -1,0 +1,851 @@
+.parking-app {
+    padding-block: 2rem 4rem;
+}
+
+.parking-toolbar {
+    display: grid;
+    gap: 1rem;
+}
+
+.parking-toolbar__intro h1 {
+    margin: 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.7rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+}
+
+.parking-toolbar__intro p {
+    max-width: 780px;
+    margin: 0.75rem 0 0;
+    color: var(--color-muted);
+    font-size: 1.08rem;
+}
+
+.parking-search-panel {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) auto;
+    gap: 0.8rem;
+    align-items: end;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+}
+
+.parking-search-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.field {
+    display: grid;
+    gap: 0.4rem;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+.field > span {
+    font-size: 0.9rem;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink);
+    background: #fff;
+    font-family: var(--font-body);
+    font-weight: 400;
+}
+
+.field textarea {
+    resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: var(--color-blue);
+}
+
+.priority-control,
+.form-section {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.priority-control legend,
+.form-section legend {
+    margin-bottom: 0.55rem;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 800;
+}
+
+.segmented-control,
+.choice-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.segmented-control label,
+.choice-grid label {
+    position: relative;
+}
+
+.segmented-control input,
+.choice-grid input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+}
+
+.segmented-control span,
+.choice-grid span {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-navy);
+    background: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.segmented-control input:checked + span,
+.choice-grid input:checked + span {
+    color: #fff;
+    border-color: var(--color-navy);
+    background: var(--color-navy);
+}
+
+.segmented-control input:focus-visible + span,
+.choice-grid input:focus-visible + span {
+    outline: 3px solid #f29f38;
+    outline-offset: 3px;
+}
+
+.preference-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    background: var(--color-lavender);
+}
+
+.preference-summary strong {
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-weight: 800;
+}
+
+.preference-summary p {
+    margin: 0.25rem 0 0;
+    color: var(--color-muted);
+}
+
+.text-button {
+    min-height: 44px;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-navy);
+    background: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.parking-status {
+    min-height: 1.5rem;
+    margin: 0;
+    color: var(--color-muted);
+    font-weight: 700;
+}
+
+.parking-view-switch {
+    display: flex;
+    gap: 0.45rem;
+    margin-top: 1rem;
+    padding: 0.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    width: fit-content;
+}
+
+.view-switch {
+    min-height: 42px;
+    padding: 0.55rem 0.85rem;
+    border: 0;
+    border-radius: 9px;
+    color: var(--color-muted);
+    background: transparent;
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.view-switch.is-active {
+    color: var(--color-navy);
+    background: var(--color-blue-soft);
+}
+
+.parking-workspace {
+    display: grid;
+    grid-template-columns: minmax(360px, 0.78fr) minmax(0, 1.22fr);
+    gap: 1rem;
+    align-items: stretch;
+    margin-top: 1rem;
+}
+
+.parking-results,
+.parking-map-panel {
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.parking-results {
+    display: flex;
+    flex-direction: column;
+    max-height: 820px;
+}
+
+.parking-results__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.parking-results__header h2 {
+    margin: 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.parking-results__header p {
+    margin: 0.25rem 0 0;
+    color: var(--color-muted);
+}
+
+.parking-list {
+    display: grid;
+    gap: 0.8rem;
+    margin: 0;
+    padding: 1rem;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.parking-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+}
+
+.parking-card.is-best {
+    border-color: var(--color-blue);
+    box-shadow: var(--shadow-soft);
+}
+
+.parking-card.is-selected {
+    outline: 3px solid rgba(26, 87, 140, 0.18);
+}
+
+.parking-card__topline,
+.parking-card__meta,
+.parking-card__features,
+.parking-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+}
+
+.parking-card h3 {
+    margin: 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-size: 1.16rem;
+    font-weight: 800;
+}
+
+.parking-card__address,
+.parking-card__distance,
+.parking-card__note {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.parking-card__trust {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    background: #f5f8fb;
+}
+
+.parking-card__trust strong {
+    color: var(--color-success);
+}
+
+.parking-card__trust span {
+    color: var(--color-amber);
+}
+
+.parking-card__trust small {
+    color: var(--color-muted);
+}
+
+.feature-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0.35rem 0.58rem;
+    border-radius: 999px;
+    color: var(--color-navy);
+    background: var(--color-blue-soft);
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.parking-card__actions .button {
+    min-height: 44px;
+    padding: 0.65rem 0.8rem;
+    font-size: 0.9rem;
+}
+
+.plan-b-card {
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.9rem;
+    border-radius: var(--radius-md);
+    color: var(--color-amber);
+    background: var(--color-amber-soft);
+}
+
+.plan-b-card strong {
+    font-family: var(--font-display);
+    font-weight: 800;
+}
+
+.plan-b-card p {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.parking-map-panel {
+    position: relative;
+    min-height: 720px;
+    background: linear-gradient(135deg, #e8f2f5, #d6e8ed);
+}
+
+#map {
+    width: 100%;
+    min-height: 720px;
+}
+
+.map-context {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 500;
+    max-width: min(360px, calc(100% - 2rem));
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--shadow-soft);
+}
+
+.map-context strong {
+    color: var(--color-navy);
+    font-family: var(--font-display);
+}
+
+.map-context span {
+    color: var(--color-muted);
+    font-size: 0.86rem;
+}
+
+.inclume-marker {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--color-blue);
+    box-shadow: 0 7px 20px rgba(9, 31, 56, 0.25);
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.inclume-marker--best {
+    background: #008b7c;
+}
+
+.inclume-marker--warning {
+    background: #986000;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 14px;
+}
+
+.leaflet-popup-content {
+    min-width: 230px;
+    font-family: var(--font-body);
+}
+
+.leaflet-popup-content h3 {
+    margin: 0 0 0.35rem;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+}
+
+.empty-state {
+    margin: 1rem;
+    padding: 1.2rem;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-lavender);
+}
+
+.empty-state h3 {
+    margin: 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+}
+
+.empty-state p {
+    color: var(--color-muted);
+}
+
+.inclume-dialog {
+    width: min(760px, calc(100% - 1.25rem));
+    max-height: min(90vh, 900px);
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+    color: var(--color-ink);
+    background: #fff;
+    box-shadow: 0 30px 80px rgba(9, 31, 56, 0.28);
+    overflow: auto;
+}
+
+.inclume-dialog--compact {
+    width: min(560px, calc(100% - 1.25rem));
+}
+
+.inclume-dialog::backdrop {
+    background: rgba(6, 24, 42, 0.62);
+    backdrop-filter: blur(4px);
+}
+
+.inclume-dialog > form,
+.inclume-dialog > div:not(.dialog-header) {
+    padding-inline: 1.25rem;
+}
+
+.dialog-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+}
+
+.dialog-header h2 {
+    margin: 0.45rem 0 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.dialog-header p {
+    margin: 0.3rem 0 0;
+    color: var(--color-muted);
+}
+
+.icon-button {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    color: var(--color-navy);
+    background: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1rem;
+}
+
+.form-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.switch-list {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
+.switch-row,
+.checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+}
+
+.switch-row input,
+.checkbox-row input,
+.observed-grid input {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    margin-top: 0.15rem;
+    accent-color: var(--color-blue);
+}
+
+.switch-row span {
+    display: grid;
+    gap: 0.1rem;
+}
+
+.switch-row strong {
+    color: var(--color-navy);
+    font-family: var(--font-display);
+}
+
+.switch-row small {
+    color: var(--color-muted);
+}
+
+.dialog-actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    margin-top: 1.25rem;
+    padding: 1rem 0 1.25rem;
+    border-top: 1px solid var(--color-border);
+    background: #fff;
+}
+
+.navigation-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding-block: 1rem;
+}
+
+.provider-button {
+    min-height: 90px;
+    display: grid;
+    gap: 0.2rem;
+    align-content: center;
+    padding: 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-navy);
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.provider-button:hover {
+    border-color: var(--color-blue);
+    background: var(--color-blue-soft);
+}
+
+.provider-button strong {
+    font-family: var(--font-display);
+    font-weight: 800;
+}
+
+.provider-button span {
+    color: var(--color-muted);
+}
+
+.form-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.choice-grid span {
+    width: 100%;
+    border-radius: var(--radius-sm);
+}
+
+.observed-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.observed-grid label {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.privacy-callout {
+    display: grid;
+    gap: 0.15rem;
+    margin: 1rem 0;
+    padding: 0.9rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-amber);
+    background: var(--color-amber-soft);
+}
+
+.privacy-callout span {
+    color: var(--color-muted);
+}
+
+.form-feedback {
+    min-height: 1.5rem;
+    color: var(--color-muted);
+    font-weight: 700;
+}
+
+.form-feedback.is-error {
+    color: var(--color-danger);
+}
+
+.form-feedback.is-success {
+    color: var(--color-success);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding-block: 1rem;
+}
+
+.detail-metric {
+    padding: 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+}
+
+.detail-metric span {
+    display: block;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+}
+
+.detail-metric strong {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+}
+
+.detail-section {
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-border);
+}
+
+.detail-section h3 {
+    margin: 0 0 0.4rem;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+}
+
+.detail-section p {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    padding: 1rem 0 1.25rem;
+}
+
+.parking-workspace[data-current-view="list"] .parking-map-panel {
+    display: none;
+}
+
+.parking-workspace[data-current-view="list"] {
+    grid-template-columns: minmax(0, 780px);
+}
+
+.parking-workspace[data-current-view="map"] .parking-results {
+    display: none;
+}
+
+.parking-workspace[data-current-view="map"] {
+    grid-template-columns: 1fr;
+}
+
+@media (max-width: 960px) {
+    .parking-search-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .parking-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .parking-workspace[data-current-view="split"] .parking-map-panel {
+        display: none;
+    }
+
+    .parking-results {
+        max-height: none;
+    }
+
+    .parking-list {
+        overflow: visible;
+    }
+
+    .view-switch--split {
+        display: none;
+    }
+
+    .parking-map-panel,
+    #map {
+        min-height: 540px;
+    }
+}
+
+@media (max-width: 680px) {
+    .parking-app {
+        padding-top: 1.25rem;
+    }
+
+    .parking-toolbar,
+    .parking-view-switch,
+    .parking-workspace {
+        width: min(100% - 1rem, var(--shell));
+    }
+
+    .parking-search-panel__actions .button {
+        width: 100%;
+    }
+
+    .preference-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .parking-results,
+    .parking-map-panel {
+        border-radius: 18px;
+    }
+
+    .parking-results__header {
+        flex-direction: column;
+    }
+
+    .parking-card__actions .button {
+        width: 100%;
+    }
+
+    .form-grid,
+    .form-grid--three,
+    .choice-grid,
+    .observed-grid,
+    .navigation-options,
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dialog-actions {
+        flex-direction: column-reverse;
+    }
+
+    .dialog-actions .button {
+        width: 100%;
+    }
+
+    .inclume-dialog {
+        max-height: 94vh;
+        border-radius: 18px;
+    }
+
+    .map-context {
+        right: 0.65rem;
+        left: 0.65rem;
+        max-width: none;
+    }
+}
+
+@media (min-width: 961px) {
+    .parking-workspace[data-current-view="split"] .parking-results,
+    .parking-workspace[data-current-view="split"] .parking-map-panel {
+        display: flex;
+    }
+}

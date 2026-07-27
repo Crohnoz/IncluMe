@@ -1,606 +1,290 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mapa comunitario de estacionamientos accesibles y verificados.">
-    <title>Estacionamientos accesibles | IncluMe</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        crossorigin=""
-    >
-    <style>
-        :root {
-            --inclume-primary: #2155a3;
-            --inclume-primary-dark: #153b74;
-            --inclume-surface: #ffffff;
-            --inclume-background: #f3f6fa;
-            --inclume-text: #172033;
-            --inclume-muted: #5d687a;
-            --inclume-border: #d8dee9;
-            --inclume-success: #176b45;
-            --inclume-warning: #8a5a00;
-            --inclume-unavailable: #8b2f39;
-        }
 
-        * {
-            box-sizing: border-box;
-        }
+{% block title %}Encontrar estacionamiento | IncluMe{% endblock %}
+{% block meta_description %}Encuentra estacionamientos accesibles, filtra según tus necesidades y abre la ubicación exacta en tu aplicación de navegación.{% endblock %}
 
-        body {
-            margin: 0;
-            color: var(--inclume-text);
-            background: var(--inclume-background);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="{% static 'parking.css' %}">
+{% endblock %}
 
-        .skip-link {
-            position: absolute;
-            top: -60px;
-            left: 1rem;
-            z-index: 2000;
-            padding: 0.75rem 1rem;
-            color: #fff;
-            background: var(--inclume-primary-dark);
-            border-radius: 0.5rem;
-        }
+{% block content %}
+<section
+    class="parking-app"
+    id="parking-app"
+    data-api-url="{% url 'parking_data' %}"
+    data-submit-url="{% url 'submit_parking' %}"
+    data-verify-url-template="{% url 'verify_parking' 0 %}"
+    data-tile-url="{{ map_tile_url }}"
+    data-tile-attribution="{{ map_tile_attribution }}"
+>
+    <div class="parking-toolbar section-shell">
+        <div class="parking-toolbar__intro">
+            <span class="eyebrow">IncluMe Estaciona</span>
+            <h1>¿Dónde necesitas estacionar?</h1>
+            <p>Compara condiciones de acceso y abre la coordenada exacta en tu aplicación de navegación.</p>
+        </div>
 
-        .skip-link:focus {
-            top: 1rem;
-        }
+        <div class="parking-search-panel" aria-label="Controles de búsqueda">
+            <label class="field field--search" for="parking-search">
+                <span>Destino o nombre del lugar</span>
+                <input id="parking-search" type="search" autocomplete="off" placeholder="Clínica, comercio o dirección">
+            </label>
+            <div class="parking-search-panel__actions">
+                <button class="button button--primary" id="locate-button" type="button">Usar mi ubicación</button>
+                <button class="button button--secondary" id="preferences-button" type="button">Mis preferencias</button>
+                <button class="button button--secondary" id="contribute-button" type="button">Aportar lugar</button>
+            </div>
+        </div>
 
-        .parking-header {
-            background: var(--inclume-surface);
-            border-bottom: 1px solid var(--inclume-border);
-        }
+        <fieldset class="priority-control">
+            <legend>Prioridad del viaje</legend>
+            <div class="segmented-control">
+                <label><input type="radio" name="priority" value="effort" checked><span>Menor esfuerzo</span></label>
+                <label><input type="radio" name="priority" value="trust"><span>Más verificado</span></label>
+                <label><input type="radio" name="priority" value="distance"><span>Más cercano</span></label>
+            </div>
+        </fieldset>
 
-        .parking-nav {
-            width: min(1180px, calc(100% - 2rem));
-            margin: 0 auto;
-            min-height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
+        <div class="preference-summary" id="preference-summary">
+            <div>
+                <strong>Tu configuración de acceso</strong>
+                <p id="preference-summary-text">Máximo 100 m a la entrada · preferir ruta sin escalones</p>
+            </div>
+            <button class="text-button" id="edit-preferences-button" type="button">Editar</button>
+        </div>
 
-        .parking-nav .logo {
-            width: auto;
-            max-height: 48px;
-        }
+        <p class="parking-status" id="parking-status" role="status" aria-live="polite">Cargando estacionamientos…</p>
+    </div>
 
-        .parking-nav ul {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
+    <div class="parking-view-switch section-shell" aria-label="Vista de resultados">
+        <button class="view-switch is-active" type="button" data-view="list" aria-pressed="true">Lista</button>
+        <button class="view-switch" type="button" data-view="map" aria-pressed="false">Mapa</button>
+        <button class="view-switch view-switch--split" type="button" data-view="split" aria-pressed="false">Vista dividida</button>
+    </div>
 
-        .parking-nav a {
-            color: var(--inclume-text);
-            font-weight: 650;
-            text-decoration: none;
-        }
-
-        .parking-nav a:hover,
-        .parking-nav a:focus-visible {
-            color: var(--inclume-primary);
-            text-decoration: underline;
-        }
-
-        .parking-main {
-            width: min(1180px, calc(100% - 2rem));
-            margin: 0 auto;
-            padding: 2rem 0 3rem;
-        }
-
-        .parking-hero {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .parking-hero h1 {
-            max-width: 780px;
-            margin: 0;
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            line-height: 1.05;
-        }
-
-        .parking-hero p {
-            max-width: 760px;
-            margin: 0;
-            color: var(--inclume-muted);
-            font-size: 1.08rem;
-            line-height: 1.6;
-        }
-
-        .parking-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .button {
-            min-height: 46px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.7rem 1rem;
-            border: 2px solid var(--inclume-primary);
-            border-radius: 0.65rem;
-            color: #fff;
-            background: var(--inclume-primary);
-            font: inherit;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .button:hover,
-        .button:focus-visible {
-            background: var(--inclume-primary-dark);
-            border-color: var(--inclume-primary-dark);
-        }
-
-        .button-secondary {
-            color: var(--inclume-primary-dark);
-            background: transparent;
-        }
-
-        .button-secondary:hover,
-        .button-secondary:focus-visible {
-            color: #fff;
-        }
-
-        .status-message {
-            min-height: 1.5rem;
-            margin: 0 0 1rem;
-            color: var(--inclume-muted);
-            font-weight: 600;
-        }
-
-        .parking-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
-            gap: 1rem;
-            align-items: start;
-        }
-
-        .map-panel,
-        .list-panel {
-            overflow: hidden;
-            background: var(--inclume-surface);
-            border: 1px solid var(--inclume-border);
-            border-radius: 1rem;
-            box-shadow: 0 12px 35px rgba(24, 39, 75, 0.08);
-        }
-
-        #map {
-            width: 100%;
-            min-height: 620px;
-        }
-
-        .list-panel {
-            max-height: 620px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .list-panel-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--inclume-border);
-        }
-
-        .list-panel-header h2 {
-            margin: 0;
-            font-size: 1.25rem;
-        }
-
-        .parking-list {
-            display: grid;
-            gap: 0.75rem;
-            padding: 1rem;
-            margin: 0;
-            overflow-y: auto;
-            list-style: none;
-        }
-
-        .parking-card {
-            padding: 1rem;
-            border: 1px solid var(--inclume-border);
-            border-radius: 0.8rem;
-            background: #fff;
-        }
-
-        .parking-card h3 {
-            margin: 0 0 0.35rem;
-            font-size: 1.05rem;
-        }
-
-        .parking-card p {
-            margin: 0.3rem 0;
-            color: var(--inclume-muted);
-            line-height: 1.45;
-        }
-
-        .parking-card-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.8rem;
-        }
-
-        .parking-card-actions .button {
-            min-height: 38px;
-            padding: 0.45rem 0.7rem;
-            font-size: 0.9rem;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            width: fit-content;
-            padding: 0.25rem 0.55rem;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 750;
-            background: #e8edf5;
-        }
-
-        .badge-verified {
-            color: var(--inclume-success);
-            background: #e4f4ec;
-        }
-
-        .badge-pending {
-            color: var(--inclume-warning);
-            background: #fff2d2;
-        }
-
-        .badge-unavailable {
-            color: var(--inclume-unavailable);
-            background: #fbe5e8;
-        }
-
-        .feature-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            padding: 0;
-            margin: 0.65rem 0 0;
-            list-style: none;
-        }
-
-        .feature-list li {
-            padding: 0.25rem 0.45rem;
-            color: var(--inclume-primary-dark);
-            background: #eaf1fb;
-            border-radius: 0.4rem;
-            font-size: 0.78rem;
-        }
-
-        .empty-state {
-            padding: 1rem;
-            color: var(--inclume-muted);
-        }
-
-        .leaflet-popup-content {
-            min-width: 230px;
-        }
-
-        .leaflet-popup-content h3 {
-            margin: 0 0 0.35rem;
-        }
-
-        .parking-footer {
-            padding: 1.5rem 1rem;
-            text-align: center;
-            color: var(--inclume-muted);
-            background: var(--inclume-surface);
-            border-top: 1px solid var(--inclume-border);
-        }
-
-        @media (max-width: 850px) {
-            .parking-layout {
-                grid-template-columns: 1fr;
-            }
-
-            #map {
-                min-height: 480px;
-            }
-
-            .list-panel {
-                max-height: none;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .parking-nav {
-                padding: 0.75rem 0;
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .parking-main {
-                width: min(100% - 1rem, 1180px);
-                padding-top: 1.25rem;
-            }
-
-            #map {
-                min-height: 400px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <a class="skip-link" href="#parking-list">Saltar a la lista de estacionamientos</a>
-
-    <header class="parking-header">
-        <nav class="parking-nav" aria-label="Navegación principal">
-            <a href="/" aria-label="Ir al inicio de IncluMe">
-                <img src="{% static 'images/inclumelogo.png' %}" alt="IncluMe" class="logo">
-            </a>
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/parking/" aria-current="page">Estacionamientos</a></li>
-                <li><a href="/resources/">Recursos</a></li>
-                <li><a href="/contact/">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main class="parking-main">
-        <section class="parking-hero" aria-labelledby="parking-title">
-            <h1 id="parking-title">Encuentra estacionamientos accesibles, verificados por la comunidad.</h1>
-            <p>
-                Consulta ubicación, acceso real, espacio de transferencia y fecha de verificación.
-                La lista ubicada junto al mapa entrega la misma información en un formato accesible.
-            </p>
-            <div class="parking-actions">
-                <button class="button" id="locate-button" type="button">Usar mi ubicación</button>
-                <a class="button button-secondary" href="#parking-list">Revisar la lista</a>
+    <div class="parking-workspace section-shell" data-current-view="split">
+        <section class="parking-results" id="results-panel" aria-labelledby="results-title">
+            <div class="parking-results__header">
+                <div>
+                    <h2 id="results-title">Opciones compatibles</h2>
+                    <p id="results-summary">Buscando información reciente…</p>
+                </div>
+                <span class="status-chip" id="update-chip">Sin actualizar</span>
+            </div>
+            <ol class="parking-list" id="parking-list"></ol>
+            <div class="empty-state" id="parking-empty" hidden>
+                <h3>No encontramos una opción compatible</h3>
+                <p>Amplía la distancia, modifica una preferencia o aporta un lugar para que pueda revisarse.</p>
+                <button class="button button--secondary" type="button" id="empty-preferences-button">Cambiar preferencias</button>
             </div>
         </section>
 
-        <p class="status-message" id="map-status" role="status" aria-live="polite">
-            Cargando estacionamientos…
-        </p>
+        <section class="parking-map-panel" id="map-panel" aria-label="Mapa de estacionamientos accesibles">
+            <div class="map-context" id="map-context">
+                <strong>Mapa orientativo</strong>
+                <span>La lista contiene la misma información sin depender del mapa.</span>
+            </div>
+            <div id="map" aria-label="Mapa interactivo de estacionamientos accesibles"></div>
+            <noscript>
+                <p class="map-fallback">Activa JavaScript para utilizar el mapa. La información principal también está disponible en la lista.</p>
+            </noscript>
+        </section>
+    </div>
+</section>
 
-        <div class="parking-layout">
-            <section class="map-panel" aria-label="Mapa de estacionamientos accesibles">
-                <div id="map" role="application" aria-label="Mapa interactivo de estacionamientos accesibles"></div>
-            </section>
-
-            <section class="list-panel" aria-labelledby="parking-list-title">
-                <div class="list-panel-header">
-                    <h2 id="parking-list-title">Lugares encontrados</h2>
-                </div>
-                <ul class="parking-list" id="parking-list"></ul>
-            </section>
+<dialog class="inclume-dialog" id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-header">
+        <div>
+            <span class="status-chip" id="detail-status">Información del lugar</span>
+            <h2 id="detail-title">Detalle del estacionamiento</h2>
         </div>
-    </main>
+        <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar detalle">×</button>
+    </div>
+    <div id="detail-content"></div>
+</dialog>
 
-    <footer class="parking-footer">
-        <p>© 2026 IncluMe. Accesibilidad construida con información comunitaria.</p>
-    </footer>
+<dialog class="inclume-dialog inclume-dialog--compact" id="navigation-dialog" aria-labelledby="navigation-title">
+    <div class="dialog-header">
+        <div>
+            <span class="status-chip">Abrir coordenada exacta</span>
+            <h2 id="navigation-title">¿Con qué aplicación quieres llegar?</h2>
+            <p id="navigation-place-name"></p>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar navegación">×</button>
+    </div>
+    <div class="navigation-options">
+        <button class="provider-button" type="button" data-provider="system"><strong>Aplicación compatible</strong><span>Permite que tu teléfono elija</span></button>
+        <button class="provider-button" type="button" data-provider="waze"><strong>Waze</strong><span>Abrir ruta vehicular</span></button>
+        <button class="provider-button" type="button" data-provider="google"><strong>Google Maps</strong><span>Abrir indicaciones</span></button>
+        <button class="provider-button" type="button" data-provider="apple"><strong>Apple Maps</strong><span>Disponible en dispositivos Apple</span></button>
+    </div>
+    <label class="checkbox-row"><input id="remember-provider" type="checkbox"> Recordar esta elección en este dispositivo</label>
+</dialog>
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        crossorigin=""
-    ></script>
-    <script>
-        const parkingApiUrl = "{% url 'parking_data' %}";
-        const defaultCenter = [-33.4489, -70.6693];
-        const map = L.map("map", { scrollWheelZoom: false }).setView(defaultCenter, 12);
-        const markerLayer = L.layerGroup().addTo(map);
-        const markerByParkingId = new Map();
-        const parkingList = document.getElementById("parking-list");
-        const statusMessage = document.getElementById("map-status");
-        const locateButton = document.getElementById("locate-button");
+<dialog class="inclume-dialog" id="preferences-dialog" aria-labelledby="preferences-title">
+    <form id="preferences-form" method="dialog">
+        <div class="dialog-header">
+            <div>
+                <span class="status-chip">No necesitamos tu diagnóstico</span>
+                <h2 id="preferences-title">Preferencias de acceso</h2>
+                <p>Guarda condiciones funcionales en este dispositivo. Puedes borrarlas cuando quieras.</p>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar preferencias">×</button>
+        </div>
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19,
-            attribution: "&copy; OpenStreetMap contributors",
-        }).addTo(map);
+        <div class="form-grid">
+            <label class="field">
+                <span>Máximo hasta la entrada accesible</span>
+                <select name="maxEntranceDistance">
+                    <option value="25">25 metros</option>
+                    <option value="50">50 metros</option>
+                    <option value="100" selected>100 metros</option>
+                    <option value="250">250 metros</option>
+                    <option value="0">Sin límite</option>
+                </select>
+            </label>
+            <label class="field">
+                <span>Lado de transferencia</span>
+                <select name="transferSide">
+                    <option value="any">Cualquier lado</option>
+                    <option value="right">Lado derecho</option>
+                    <option value="left">Lado izquierdo</option>
+                    <option value="both">Necesito ambos lados</option>
+                </select>
+            </label>
+        </div>
 
-        function statusClass(status) {
-            if (status === "verified") return "badge badge-verified";
-            if (status === "unavailable") return "badge badge-unavailable";
-            return "badge badge-pending";
-        }
+        <div class="switch-list">
+            <label class="switch-row"><input type="checkbox" name="stepFreeOnly" checked><span><strong>Ruta sin escalones</strong><small>Excluir lugares que confirman escalones en la ruta.</small></span></label>
+            <label class="switch-row"><input type="checkbox" name="avoidSteepSlope" checked><span><strong>Evitar pendiente pronunciada</strong><small>Reducir esfuerzo y riesgo durante el desplazamiento.</small></span></label>
+            <label class="switch-row"><input type="checkbox" name="largeText"><span><strong>Texto grande</strong><small>Aumentar texto y espacio vertical.</small></span></label>
+            <label class="switch-row"><input type="checkbox" name="highContrast"><span><strong>Alto contraste</strong><small>Reforzar bordes, texto y estados.</small></span></label>
+        </div>
 
-        function formatVerificationDate(value) {
-            if (!value) return "Sin verificación reciente";
-            const date = new Date(value);
-            return `Verificado el ${new Intl.DateTimeFormat("es-CL", {
-                dateStyle: "medium",
-            }).format(date)}`;
-        }
+        <div class="dialog-actions">
+            <button class="button button--secondary" id="reset-preferences" type="button">Restablecer</button>
+            <button class="button button--primary" type="submit">Guardar preferencias</button>
+        </div>
+    </form>
+</dialog>
 
-        function navigationUrl(item, provider) {
-            const destination = `${item.latitude},${item.longitude}`;
-            if (provider === "waze") {
-                return `https://www.waze.com/ul?ll=${destination}&navigate=yes`;
-            }
-            return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
-        }
+<dialog class="inclume-dialog" id="verify-dialog" aria-labelledby="verify-title">
+    <form id="verify-form">
+        <div class="dialog-header">
+            <div>
+                <span class="status-chip status-chip--success">Verificación rápida</span>
+                <h2 id="verify-title">Ayuda a la siguiente persona</h2>
+                <p id="verify-place-name"></p>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar verificación">×</button>
+        </div>
 
-        function createFeatureList(features) {
-            if (!features.length) return null;
-            const list = document.createElement("ul");
-            list.className = "feature-list";
-            features.forEach((feature) => {
-                const item = document.createElement("li");
-                item.textContent = feature;
-                list.appendChild(item);
-            });
-            return list;
-        }
+        <fieldset class="form-section">
+            <legend>¿Pudiste utilizar este estacionamiento?</legend>
+            <div class="choice-grid">
+                <label><input type="radio" name="accessibility_confirmed" value="true" required><span>Sí, pude usarlo</span></label>
+                <label><input type="radio" name="accessibility_confirmed" value="false"><span>No pude usarlo</span></label>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend>¿Continúa disponible?</legend>
+            <div class="choice-grid">
+                <label><input type="radio" name="is_available" value="true" required><span>Sí</span></label>
+                <label><input type="radio" name="is_available" value="false"><span>No</span></label>
+            </div>
+        </fieldset>
 
-        function createPopup(item) {
-            const container = document.createElement("div");
-            const title = document.createElement("h3");
-            const location = document.createElement("p");
-            const status = document.createElement("span");
-            const verification = document.createElement("p");
-            const route = document.createElement("a");
+        <div class="form-grid form-grid--three">
+            <label class="field"><span>Espacio lateral libre</span><select name="transfer_space_clear"><option value="">No sé</option><option value="true">Sí</option><option value="false">No</option></select></label>
+            <label class="field"><span>Ruta sin escalones</span><select name="step_free_route_clear"><option value="">No sé</option><option value="true">Sí</option><option value="false">No</option></select></label>
+            <label class="field"><span>Señalización visible</span><select name="official_signage_visible"><option value="">No sé</option><option value="true">Sí</option><option value="false">No</option></select></label>
+        </div>
 
-            title.textContent = item.name;
-            location.textContent = item.location;
-            status.className = statusClass(item.status);
-            status.textContent = item.status_label;
-            verification.textContent = formatVerificationDate(item.last_verified_at);
-            route.href = navigationUrl(item, "google");
-            route.target = "_blank";
-            route.rel = "noopener noreferrer";
-            route.textContent = "Abrir ruta";
+        <label class="field">
+            <span>Problema observado</span>
+            <select name="issue_type">
+                <option value="none">Sin problema</option>
+                <option value="occupied">Espacio ocupado</option>
+                <option value="blocked">Acceso bloqueado</option>
+                <option value="signage">Señalización ausente o dañada</option>
+                <option value="route">Ruta accesible interrumpida</option>
+                <option value="removed">El estacionamiento ya no existe</option>
+                <option value="other">Otro</option>
+            </select>
+        </label>
+        <label class="field">
+            <span>Comentario opcional</span>
+            <textarea name="comment" rows="3" maxlength="800" placeholder="Describe solo lo que observaste, sin datos personales."></textarea>
+        </label>
+        <p class="form-feedback" id="verify-feedback" role="status" aria-live="polite"></p>
+        <div class="dialog-actions">
+            <button class="button button--secondary" type="button" data-close-dialog>Cancelar</button>
+            <button class="button button--primary" type="submit">Enviar verificación</button>
+        </div>
+    </form>
+</dialog>
 
-            container.append(title, location, status, verification);
-            const features = createFeatureList(item.features);
-            if (features) container.appendChild(features);
-            container.appendChild(route);
-            return container;
-        }
+<dialog class="inclume-dialog" id="contribute-dialog" aria-labelledby="contribute-title">
+    <form id="contribute-form">
+        <div class="dialog-header">
+            <div>
+                <span class="status-chip">Aporte moderado</span>
+                <h2 id="contribute-title">Agregar estacionamiento</h2>
+                <p>El lugar quedará pendiente de revisión antes de publicarse.</p>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar aporte">×</button>
+        </div>
 
-        function focusParking(item) {
-            const marker = markerByParkingId.get(item.id);
-            map.setView([item.latitude, item.longitude], 17);
-            if (marker) marker.openPopup();
-            document.getElementById(`parking-${item.id}`)?.focus();
-        }
+        <div class="privacy-callout"><strong>No publiques patentes, rostros, credenciales ni diagnósticos.</strong><span>Describe características observables del lugar.</span></div>
 
-        function createParkingCard(item) {
-            const card = document.createElement("li");
-            const title = document.createElement("h3");
-            const location = document.createElement("p");
-            const type = document.createElement("p");
-            const status = document.createElement("span");
-            const verification = document.createElement("p");
-            const actions = document.createElement("div");
-            const showButton = document.createElement("button");
-            const wazeLink = document.createElement("a");
+        <div class="form-grid">
+            <label class="field"><span>Nombre del lugar</span><input name="name" required maxlength="160" placeholder="Ej.: Hospital, comercio o edificio"></label>
+            <label class="field"><span>Dirección o referencia</span><input name="location" required maxlength="255" placeholder="Ej.: acceso norte, estacionamiento 02"></label>
+        </div>
 
-            card.className = "parking-card";
-            card.id = `parking-${item.id}`;
-            card.tabIndex = -1;
-            title.textContent = item.name;
-            location.textContent = item.location;
-            type.textContent = item.place_type;
-            status.className = statusClass(item.status);
-            status.textContent = item.status_label;
-            verification.textContent = `${formatVerificationDate(item.last_verified_at)} · ${item.verification_count} confirmaciones`;
+        <div class="form-grid">
+            <label class="field"><span>Latitud del estacionamiento</span><input name="latitude" type="number" step="0.000001" min="-90" max="90" required></label>
+            <label class="field"><span>Longitud del estacionamiento</span><input name="longitude" type="number" step="0.000001" min="-180" max="180" required></label>
+        </div>
+        <button class="button button--secondary" id="use-location-for-contribution" type="button">Usar mi ubicación para el aporte</button>
 
-            const features = createFeatureList(item.features);
+        <div class="form-grid form-grid--three">
+            <label class="field"><span>Tipo de lugar</span><select name="place_type" required><option value="street">Vía pública</option><option value="municipal">Municipal</option><option value="business">Comercio</option><option value="healthcare">Clínica u hospital</option><option value="building">Edificio</option><option value="private">Privado</option><option value="other" selected>Otro</option></select></label>
+            <label class="field"><span>Lado de transferencia</span><select name="transfer_side" required><option value="unknown">No sé</option><option value="right">Derecho</option><option value="left">Izquierdo</option><option value="both">Ambos lados</option></select></label>
+            <label class="field"><span>Superficie</span><select name="surface_type" required><option value="unknown">No sé</option><option value="level">Nivelada</option><option value="slight_slope">Pendiente leve</option><option value="steep_slope">Pendiente pronunciada</option><option value="irregular">Irregular</option></select></label>
+        </div>
 
-            actions.className = "parking-card-actions";
-            showButton.className = "button button-secondary";
-            showButton.type = "button";
-            showButton.textContent = "Ver en mapa";
-            showButton.addEventListener("click", () => focusParking(item));
+        <label class="field"><span>Distancia aproximada hasta la entrada accesible</span><input name="distance_to_entrance_m" type="number" min="0" max="5000" placeholder="Metros"></label>
 
-            wazeLink.className = "button";
-            wazeLink.href = navigationUrl(item, "waze");
-            wazeLink.target = "_blank";
-            wazeLink.rel = "noopener noreferrer";
-            wazeLink.textContent = "Abrir en Waze";
+        <fieldset class="form-section">
+            <legend>Características observadas</legend>
+            <div class="observed-grid">
+                <label><input type="checkbox" name="has_official_signage"><span>Señalización oficial</span></label>
+                <label><input type="checkbox" name="has_transfer_space"><span>Espacio de transferencia</span></label>
+                <label><input type="checkbox" name="has_level_surface"><span>Superficie nivelada</span></label>
+                <label><input type="checkbox" name="has_curb_ramp"><span>Rebaje o rampa</span></label>
+                <label><input type="checkbox" name="has_step_free_route"><span>Ruta sin escalones</span></label>
+                <label><input type="checkbox" name="is_well_lit"><span>Buena iluminación</span></label>
+                <label><input type="checkbox" name="is_covered"><span>Protección climática</span></label>
+            </div>
+        </fieldset>
 
-            actions.append(showButton, wazeLink);
-            card.append(title, location, type, status, verification);
-            if (features) card.appendChild(features);
-            card.appendChild(actions);
-            return card;
-        }
+        <label class="field"><span>Cómo ingresar en vehículo</span><textarea name="vehicle_access_notes" rows="2" placeholder="Portón, costado, sentido de la calle u otra referencia."></textarea></label>
+        <label class="field"><span>Ruta hasta la entrada accesible</span><textarea name="accessible_entrance_notes" rows="2" placeholder="Describe el recorrido sin incluir datos personales."></textarea></label>
+        <label class="field"><span>Información adicional</span><textarea name="accessibility_info" rows="2"></textarea></label>
 
-        async function loadParkings() {
-            try {
-                const response = await fetch(parkingApiUrl, {
-                    headers: { Accept: "application/json" },
-                });
-                if (!response.ok) throw new Error("No fue posible cargar la información.");
+        <p class="form-feedback" id="contribute-feedback" role="status" aria-live="polite"></p>
+        <div class="dialog-actions" id="aportar">
+            <button class="button button--secondary" type="button" data-close-dialog>Cancelar</button>
+            <button class="button button--primary" type="submit">Enviar para revisión</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
 
-                const data = await response.json();
-                parkingList.replaceChildren();
-                markerLayer.clearLayers();
-                markerByParkingId.clear();
-
-                if (!data.parkings.length) {
-                    const empty = document.createElement("li");
-                    empty.className = "empty-state";
-                    empty.textContent = "Todavía no existen estacionamientos georreferenciados. Puedes agregarlos desde el panel administrativo.";
-                    parkingList.appendChild(empty);
-                    statusMessage.textContent = "No hay estacionamientos disponibles en la base de datos.";
-                    return;
-                }
-
-                const bounds = [];
-                data.parkings.forEach((item) => {
-                    const coordinates = [item.latitude, item.longitude];
-                    const marker = L.marker(coordinates).addTo(markerLayer);
-                    marker.bindPopup(createPopup(item));
-                    markerByParkingId.set(item.id, marker);
-                    parkingList.appendChild(createParkingCard(item));
-                    bounds.push(coordinates);
-                });
-
-                if (bounds.length > 1) {
-                    map.fitBounds(bounds, { padding: [35, 35] });
-                } else {
-                    map.setView(bounds[0], 16);
-                }
-
-                statusMessage.textContent = `${data.count} estacionamientos disponibles en el mapa.`;
-            } catch (error) {
-                statusMessage.textContent = "No pudimos cargar los estacionamientos. Intenta nuevamente más tarde.";
-                const empty = document.createElement("li");
-                empty.className = "empty-state";
-                empty.textContent = error.message;
-                parkingList.replaceChildren(empty);
-            }
-        }
-
-        locateButton.addEventListener("click", () => {
-            if (!navigator.geolocation) {
-                statusMessage.textContent = "Este dispositivo no permite obtener tu ubicación.";
-                return;
-            }
-
-            statusMessage.textContent = "Buscando tu ubicación…";
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const coordinates = [
-                        position.coords.latitude,
-                        position.coords.longitude,
-                    ];
-                    map.setView(coordinates, 16);
-                    L.circleMarker(coordinates, {
-                        radius: 9,
-                        weight: 3,
-                        fillOpacity: 0.7,
-                    })
-                        .addTo(map)
-                        .bindPopup("Tu ubicación aproximada")
-                        .openPopup();
-                    statusMessage.textContent = "Ubicación encontrada. Revisa los estacionamientos cercanos.";
-                },
-                () => {
-                    statusMessage.textContent = "No fue posible obtener tu ubicación. Puedes navegar manualmente por el mapa.";
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 60000,
-                },
-            );
-        });
-
-        loadParkings();
-    </script>
-</body>
-</html>
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="{% static 'parking.js' %}" defer></script>
+{% endblock %}
