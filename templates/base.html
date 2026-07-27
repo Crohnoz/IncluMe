@@ -51,7 +51,7 @@
             <div class="site-header__actions">
                 <nav class="desktop-nav" aria-label="Navegación principal">
                     <a href="{% url 'parking' %}" {% if current_page == 'parking' %}aria-current="page"{% endif %}>Encontrar</a>
-                    <a href="{% url 'municipalities' %}" {% if current_page == 'municipalities' %}aria-current="page"{% endif %}>Municipalidades</a>
+                    <a href="{% url 'municipalities' %}" {% if current_page == 'municipalities' %}aria-current="page"{% endif %}>Gobiernos locales</a>
                     <a href="{% url 'resources' %}" {% if current_page == 'resources' %}aria-current="page"{% endif %}>Recursos</a>
                     <a href="{% url 'contact' %}" {% if current_page == 'contact' %}aria-current="page"{% endif %}>Contacto</a>
                     {% if request.user.is_staff %}
@@ -69,7 +69,7 @@
                     <summary>Menú</summary>
                     <nav aria-label="Navegación móvil">
                         <a href="{% url 'parking' %}">Encontrar estacionamiento</a>
-                        <a href="{% url 'municipalities' %}">Para municipalidades</a>
+                        <a href="{% url 'municipalities' %}">Para gobiernos locales</a>
                         <a href="{% url 'resources' %}">Recursos</a>
                         <a href="{% url 'contact' %}">Contacto</a>
                         {% if request.user.is_staff %}
@@ -103,7 +103,7 @@
             </div>
             <nav aria-label="Enlaces del pie de página">
                 <a href="{% url 'parking' %}">Estacionamientos</a>
-                <a href="{% url 'municipalities' %}">Municipalidades</a>
+                <a href="{% url 'municipalities' %}">Gobiernos locales</a>
                 <a href="{% url 'resources' %}">Recursos</a>
                 <a href="{% url 'contact' %}">Contacto</a>
             </nav>
