@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     <link rel="stylesheet" href="{% static 'parking-v3.css' %}">
+    <link rel="stylesheet" href="{% static 'motion.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -59,10 +60,15 @@
                 <a href="{% url 'resources' %}">Recursos</a>
                 <a href="{% url 'contact' %}">Contacto</a>
             </nav>
+            <button class="motion-preference" id="motion-preference" type="button" aria-pressed="false">
+                <span class="motion-preference__icon" aria-hidden="true">◌</span>
+                <span class="motion-preference__label">Reducir animaciones</span>
+            </button>
             <p class="site-footer__legal">© 2026 IncluMe. Los datos comunitarios no garantizan disponibilidad en tiempo real.</p>
         </div>
     </footer>
 
+    <script src="{% static 'motion.js' %}" defer></script>
     <script src="{% static 'parking-resilience.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
