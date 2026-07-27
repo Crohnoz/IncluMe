@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import functional_views, views
+from . import functional_views, municipal_views, views
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -20,6 +20,22 @@ urlpatterns = [
         "api/parkings/<int:parking_id>/verify/",
         views.verify_parking,
         name="verify_parking",
+    ),
+    path("municipalidades/", municipal_views.municipalities, name="municipalities"),
+    path(
+        "api/municipalidades/resumen/",
+        municipal_views.municipal_summary_api,
+        name="municipal_summary_api",
+    ),
+    path(
+        "municipalidades/panel/",
+        municipal_views.municipal_dashboard,
+        name="municipal_dashboard",
+    ),
+    path(
+        "municipalidades/exportar.csv",
+        municipal_views.municipal_export_csv,
+        name="municipal_export_csv",
     ),
     path("moderation/", views.moderation_queue, name="moderation_queue"),
     path(
