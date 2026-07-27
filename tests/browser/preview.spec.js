@@ -21,12 +21,16 @@ test("core interface has no serious or critical automated accessibility violatio
   await expect(page.locator("#parking-list")).toBeVisible();
 });
 
-test("brand mark is visible, named by its link and decorative internally", async ({ page }) => {
+test("wheelchair-led brand mark is visible and named by its link", async ({ page }) => {
   const brand = page.getByRole("link", { name: "IncluMe, ir al mapa" });
+  const mark = brand.locator(".brand__mark");
   await expect(brand).toBeVisible();
-  await expect(brand.locator(".brand-logo")).toBeVisible();
-  await expect(brand.locator(".brand__mark")).toHaveAttribute("aria-hidden", "true");
+  await expect(mark).toBeVisible();
+  await expect(mark).toHaveAttribute("aria-hidden", "true");
   await expect(brand.locator(".brand__name")).toHaveText("IncluMe");
+
+  const iconBackground = await mark.evaluate((node) => getComputedStyle(node, "::before").backgroundImage);
+  expect(iconBackground).toContain("inclume-app-icon.svg");
 });
 
 test("accessibility preferences apply immediately and persist", async ({ page }) => {
@@ -44,10 +48,11 @@ test("accessibility preferences apply immediately and persist", async ({ page })
   await expect(page.locator("html")).toHaveAttribute("data-reduce-motion", "true");
   await expect(page.locator("html")).toHaveAttribute("data-map-style", "calm");
 
-  const logoMotion = await page.locator(".brand-logo").evaluate((node) => getComputedStyle(node).animationName);
-  const orbitMotion = await page.locator(".brand-logo__orbit").evaluate((node) => getComputedStyle(node).animationName);
+  const mark = page.locator(".brand__mark");
+  const logoMotion = await mark.evaluate((node) => getComputedStyle(node, "::before").animationName);
+  const routeDisplay = await mark.evaluate((node) => getComputedStyle(node, "::after").display);
   expect(logoMotion).toBe("none");
-  expect(orbitMotion).toBe("none");
+  expect(routeDisplay).toBe("none");
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-text-scale", "x-large");
