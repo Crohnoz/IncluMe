@@ -1,17 +1,20 @@
 "use strict";
 
-const CACHE_VERSION = "inclume-v5-chile-geotag-2026-07-27";
+const CACHE_VERSION = "inclume-v6-inclusive-audit-2026-07-27";
 const NAVIGATION_FALLBACK = "/parking/";
 const CORE_ASSETS = [
     NAVIGATION_FALLBACK,
     "/static/styles.css",
     "/static/parking.css",
     "/static/parking-v3.css",
+    "/static/inclusive-v4.css",
     "/static/parking-geotag.css",
+    "/static/parking-geotag-v4.css",
     "/static/motion.css",
     "/static/parking.js",
     "/static/parking-resilience.js",
-    "/static/parking-geotag.js",
+    "/static/parking-geotag-v4.js",
+    "/static/accessibility-controls.js",
     "/static/motion.js",
     "/static/manifest.webmanifest",
     "/static/images/inclume-app-icon.svg",
