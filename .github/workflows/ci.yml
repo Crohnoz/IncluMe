@@ -39,4 +39,9 @@ jobs:
       - name: Run tests
         run: python manage.py test
       - name: Check JavaScript syntax
-        run: node --check static/parking.js
+        run: |
+          node --check static/parking.js
+          node --check static/parking-resilience.js
+          node --check static/service-worker.js
+      - name: Validate web manifest JSON
+        run: python -m json.tool static/manifest.webmanifest > /dev/null
