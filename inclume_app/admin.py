@@ -8,6 +8,16 @@ from .models import (
 )
 
 
+@admin.action(description="Publicar estacionamientos seleccionados")
+def publish_parkings(modeladmin, request, queryset):
+    queryset.update(is_published=True)
+
+
+@admin.action(description="Ocultar estacionamientos seleccionados")
+def unpublish_parkings(modeladmin, request, queryset):
+    queryset.update(is_published=False)
+
+
 @admin.register(Parking)
 class ParkingAdmin(admin.ModelAdmin):
     list_display = (
@@ -15,20 +25,45 @@ class ParkingAdmin(admin.ModelAdmin):
         "location",
         "place_type",
         "status",
+        "is_published",
         "verification_count",
         "last_verified_at",
     )
     list_filter = (
+        "is_published",
         "status",
         "place_type",
+        "transfer_side",
+        "surface_type",
         "has_official_signage",
         "has_transfer_space",
         "has_curb_ramp",
         "has_step_free_route",
     )
-    search_fields = ("name", "location", "accessibility_info")
-    readonly_fields = ("created_at", "updated_at")
+    search_fields = (
+        "name",
+        "location",
+        "accessibility_info",
+        "vehicle_access_notes",
+        "accessible_entrance_notes",
+    )
+    readonly_fields = (
+        "verification_count",
+        "last_verified_at",
+        "created_at",
+        "updated_at",
+    )
+    actions = (publish_parkings, unpublish_parkings)
     fieldsets = (
+        (
+            "Publicación",
+            {
+                "fields": (
+                    "is_published",
+                    "status",
+                )
+            },
+        ),
         (
             "Ubicación",
             {
@@ -36,15 +71,22 @@ class ParkingAdmin(admin.ModelAdmin):
                     "name",
                     "location",
                     ("latitude", "longitude"),
+                    ("entrance_latitude", "entrance_longitude"),
                     "place_type",
+                    "photo_url",
                 )
             },
         ),
         (
-            "Accesibilidad",
+            "Decisión de accesibilidad",
             {
                 "fields": (
+                    "distance_to_entrance_m",
+                    "transfer_side",
+                    "surface_type",
                     "accessibility_info",
+                    "vehicle_access_notes",
+                    "accessible_entrance_notes",
                     "has_official_signage",
                     "has_transfer_space",
                     "has_level_surface",
@@ -61,7 +103,6 @@ class ParkingAdmin(admin.ModelAdmin):
                 "fields": (
                     "schedule_info",
                     "cost_info",
-                    "status",
                     "verification_count",
                     "last_verified_at",
                     "created_by",
@@ -79,10 +120,19 @@ class ParkingVerificationAdmin(admin.ModelAdmin):
         "parking",
         "is_available",
         "accessibility_confirmed",
+        "issue_type",
         "user",
         "created_at",
     )
-    list_filter = ("is_available", "accessibility_confirmed", "created_at")
+    list_filter = (
+        "is_available",
+        "accessibility_confirmed",
+        "issue_type",
+        "transfer_space_clear",
+        "step_free_route_clear",
+        "official_signage_visible",
+        "created_at",
+    )
     search_fields = ("parking__name", "parking__location", "comment")
     readonly_fields = ("created_at",)
 
