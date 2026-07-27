@@ -1,6 +1,17 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
+
+
+class ParkingIssueType(models.TextChoices):
+    NONE = "none", "Sin problema"
+    OCCUPIED = "occupied", "Espacio ocupado"
+    BLOCKED = "blocked", "Acceso bloqueado"
+    SIGNAGE = "signage", "Señalización ausente o dañada"
+    ROUTE = "route", "Ruta accesible interrumpida"
+    REMOVED = "removed", "El estacionamiento ya no existe"
+    OTHER = "other", "Otro"
 
 
 class Parking(models.Model):
@@ -120,8 +131,30 @@ class Parking(models.Model):
         db_index=True,
         help_text="Solo los registros publicados aparecen en la aplicación pública.",
     )
-    verification_count = models.PositiveIntegerField(default=0)
-    last_verified_at = models.DateTimeField(null=True, blank=True)
+    verification_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Cantidad de confirmaciones positivas registradas.",
+    )
+    issue_report_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Cantidad de verificaciones que informaron una incidencia.",
+    )
+    last_verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Fecha de la última confirmación positiva.",
+    )
+    last_reported_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Fecha de la última incidencia informada.",
+    )
+    last_issue_type = models.CharField(
+        max_length=20,
+        choices=ParkingIssueType.choices,
+        default=ParkingIssueType.NONE,
+        help_text="Tipo de la incidencia más reciente.",
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -147,6 +180,10 @@ class Parking(models.Model):
                 fields=["is_published", "status"],
                 name="inclume_parking_public_idx",
             ),
+            models.Index(
+                fields=["last_reported_at", "last_issue_type"],
+                name="inclume_parking_issue_idx",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -163,16 +200,16 @@ class Parking(models.Model):
             and self.entrance_longitude is not None
         )
 
+    @property
+    def last_issue_label(self) -> str:
+        return dict(ParkingIssueType.choices).get(
+            self.last_issue_type,
+            ParkingIssueType.OTHER.label,
+        )
+
 
 class ParkingVerification(models.Model):
-    class IssueType(models.TextChoices):
-        NONE = "none", "Sin problema"
-        OCCUPIED = "occupied", "Espacio ocupado"
-        BLOCKED = "blocked", "Acceso bloqueado"
-        SIGNAGE = "signage", "Señalización ausente o dañada"
-        ROUTE = "route", "Ruta accesible interrumpida"
-        REMOVED = "removed", "El estacionamiento ya no existe"
-        OTHER = "other", "Otro"
+    IssueType = ParkingIssueType
 
     parking = models.ForeignKey(
         Parking,
@@ -193,13 +230,22 @@ class ParkingVerification(models.Model):
     official_signage_visible = models.BooleanField(null=True, blank=True)
     issue_type = models.CharField(
         max_length=20,
-        choices=IssueType.choices,
-        default=IssueType.NONE,
+        choices=ParkingIssueType.choices,
+        default=ParkingIssueType.NONE,
     )
     comment = models.TextField(blank=True)
     evidence_url = models.URLField(
         blank=True,
         help_text="URL de una fotografía o evidencia almacenada externamente.",
+    )
+    submission_fingerprint = models.CharField(
+        max_length=64,
+        blank=True,
+        editable=False,
+        help_text=(
+            "Identificador irreversible y temporal utilizado para evitar envíos repetidos "
+            "desde la misma sesión."
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -211,9 +257,24 @@ class ParkingVerification(models.Model):
                 name="inclume_verify_recent_idx",
             )
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parking", "submission_fingerprint"],
+                condition=~Q(submission_fingerprint=""),
+                name="inclume_unique_verify_fingerprint",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"Verificación de {self.parking} ({self.created_at:%Y-%m-%d})"
+
+    @property
+    def is_positive_confirmation(self) -> bool:
+        return (
+            self.is_available
+            and self.accessibility_confirmed
+            and self.issue_type == ParkingIssueType.NONE
+        )
 
 
 class EducationalResource(models.Model):
