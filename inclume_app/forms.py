@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 
 from .models import Parking, ParkingVerification
@@ -8,6 +10,12 @@ BOOLEAN_CHOICES = (
     ("true", "Sí"),
     ("false", "No"),
 )
+
+# Broad bounds include continental Chile and western Chilean territory used by the product map.
+CHILE_LATITUDE_MIN = Decimal("-58")
+CHILE_LATITUDE_MAX = Decimal("-15")
+CHILE_LONGITUDE_MIN = Decimal("-112")
+CHILE_LONGITUDE_MAX = Decimal("-64")
 
 
 def nullable_boolean_field(*, label: str = "") -> forms.TypedChoiceField:
@@ -26,6 +34,15 @@ def required_boolean_field(*, label: str = "") -> forms.TypedChoiceField:
         choices=(("true", "Sí"), ("false", "No")),
         required=True,
         coerce=lambda value: value == "true",
+    )
+
+
+def coordinates_are_in_chile(latitude, longitude) -> bool:
+    if latitude is None or longitude is None:
+        return False
+    return (
+        CHILE_LATITUDE_MIN <= latitude <= CHILE_LATITUDE_MAX
+        and CHILE_LONGITUDE_MIN <= longitude <= CHILE_LONGITUDE_MAX
     )
 
 
@@ -87,9 +104,31 @@ class ParkingSubmissionForm(forms.ModelForm):
             raise forms.ValidationError(
                 "Necesitamos la ubicación del estacionamiento para revisar el aporte."
             )
+        if latitude is not None and longitude is not None and not coordinates_are_in_chile(latitude, longitude):
+            self.add_error(
+                "latitude",
+                "IncluMe está enfocado en Chile. Marca un punto dentro del territorio chileno.",
+            )
+            self.add_error(
+                "longitude",
+                "IncluMe está enfocado en Chile. Marca un punto dentro del territorio chileno.",
+            )
         if (entrance_latitude is None) != (entrance_longitude is None):
             raise forms.ValidationError(
                 "Las coordenadas de la entrada accesible deben enviarse juntas."
+            )
+        if (
+            entrance_latitude is not None
+            and entrance_longitude is not None
+            and not coordinates_are_in_chile(entrance_latitude, entrance_longitude)
+        ):
+            self.add_error(
+                "entrance_latitude",
+                "La entrada accesible debe ubicarse dentro de Chile.",
+            )
+            self.add_error(
+                "entrance_longitude",
+                "La entrada accesible debe ubicarse dentro de Chile.",
             )
         return cleaned_data
 
