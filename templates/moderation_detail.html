@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Revisar aporte #{{ parking_item.pk }} — IncluMe{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'moderation.css' %}">{% endblock %}
+{% block content %}
+<div class="moderation-shell">
+  <nav class="moderation-breadcrumb" aria-label="Ruta de navegación"><a href="{% url 'moderation_queue' %}">← Volver a la cola</a></nav>
+
+  <header class="moderation-detail-header">
+    <div><span class="eyebrow">Aporte #{{ parking_item.pk }}</span><h1>{{ parking_item.name }}</h1><p>{{ parking_item.location }}</p></div>
+    <span class="moderation-badge moderation-badge--{{ parking_item.moderation_status }}">{{ parking_item.get_moderation_status_display }}</span>
+  </header>
+
+  {% if parking_item.merged_into %}
+  <p class="moderation-warning">Este aporte fue fusionado con <a href="{% url 'moderation_detail' parking_item.merged_into.pk %}">{{ parking_item.merged_into }}</a>.</p>
+  {% endif %}
+
+  <div class="moderation-detail-grid">
+    <section class="moderation-panel" aria-labelledby="edit-title">
+      <h2 id="edit-title">Datos observables</h2>
+      <p>Corrige solamente información que pueda revisarse. La aprobación editorial no equivale a disponibilidad en tiempo real.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}<input type="hidden" name="operation" value="save_details">
+        {% if edit_form.non_field_errors %}<div class="moderation-error-summary" role="alert">{{ edit_form.non_field_errors }}</div>{% endif %}
+        <div class="moderation-form-grid">
+          {% for field in edit_form %}
+          <div class="moderation-field {% if field.name == 'accessibility_info' or field.name == 'vehicle_access_notes' or field.name == 'accessible_entrance_notes' or field.name == 'photo_url' %}moderation-field--wide{% endif %}">
+            {{ field.label_tag }}{{ field }}
+            {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+            {{ field.errors }}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="moderation-form-actions"><button class="button button--primary" type="submit">Guardar correcciones</button></div>
+      </form>
+    </section>
+
+    <aside class="moderation-decision" aria-labelledby="decision-title">
+      <h2 id="decision-title">Aplicar decisión</h2>
+      <p>Las decisiones quedan asociadas a tu cuenta y no eliminan el historial anterior.</p>
+      <form class="moderation-action-form" method="post" novalidate>
+        {% csrf_token %}<input type="hidden" name="operation" value="apply_action">
+        {% if action_form.non_field_errors %}<div class="moderation-error-summary" role="alert">{{ action_form.non_field_errors }}</div>{% endif %}
+        <div>{{ action_form.action.label_tag }}{{ action_form.action }}{{ action_form.action.errors }}</div>
+        <div>{{ action_form.target_parking.label_tag }}{{ action_form.target_parking }}{% if action_form.target_parking.help_text %}<span class="helptext">{{ action_form.target_parking.help_text }}</span>{% endif %}{{ action_form.target_parking.errors }}</div>
+        <div>{{ action_form.note.label_tag }}{{ action_form.note }}{{ action_form.note.errors }}</div>
+        <button class="button button--primary" type="submit">Registrar decisión</button>
+      </form>
+      <hr>
+      <dl>
+        <dt>Publicación</dt><dd>{% if parking_item.is_published %}Visible{% else %}Oculto{% endif %}</dd>
+        <dt>Estado operativo</dt><dd>{{ parking_item.get_status_display }}</dd>
+        <dt>Recibido</dt><dd>{{ parking_item.created_at|date:"d/m/Y H:i" }}</dd>
+        <dt>Última revisión</dt><dd>{% if parking_item.reviewed_at %}{{ parking_item.reviewed_at|date:"d/m/Y H:i" }}{% else %}Sin revisión{% endif %}</dd>
+        <dt>Moderador</dt><dd>{% if parking_item.reviewed_by %}{{ parking_item.reviewed_by.get_username }}{% else %}—{% endif %}</dd>
+      </dl>
+      {% if parking_item.has_coordinates %}<p><a class="button button--secondary" href="https://www.google.com/maps/search/?api=1&query={{ parking_item.latitude }},{{ parking_item.longitude }}" target="_blank" rel="noopener">Revisar coordenada</a></p>{% endif %}
+    </aside>
+  </div>
+
+  {% if duplicate_candidates %}
+  <section class="moderation-panel moderation-duplicates" aria-labelledby="duplicates-title">
+    <div><h2 id="duplicates-title">Posibles duplicados cercanos</h2><p>Estos registros están a menos de 80 metros. Revisa antes de aprobar o fusionar.</p></div>
+    <ul class="duplicate-list">
+      {% for candidate in duplicate_candidates %}<li class="duplicate-item"><strong><a href="{% url 'moderation_detail' candidate.id %}">{{ candidate.name }}</a></strong><p>{{ candidate.location }} · {{ candidate.distance_m }} m · {% if candidate.is_published %}publicado{% else %}oculto{% endif %}</p></li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="moderation-lower-grid">
+    <section class="moderation-verifications" aria-labelledby="verifications-title">
+      <h2 id="verifications-title">Verificaciones recientes</h2>
+      {% if verifications %}<ol class="verification-list">{% for verification in verifications %}<li class="verification-item"><strong>{% if verification.is_positive_confirmation %}Confirmación positiva{% else %}Incidencia: {{ verification.get_issue_type_display }}{% endif %}</strong><p>{{ verification.comment|default:"Sin comentario." }}</p><time datetime="{{ verification.created_at|date:'c' }}">{{ verification.created_at|date:"d/m/Y H:i" }}</time></li>{% endfor %}</ol>{% else %}<p>Aún no existen verificaciones comunitarias.</p>{% endif %}
+    </section>
+
+    <section class="moderation-history" aria-labelledby="history-title">
+      <h2 id="history-title">Historial editorial</h2>
+      {% if events %}<ol class="history-list">{% for event in events %}<li class="history-item"><strong>{{ event.get_action_display }}</strong>{% if event.note %}<p>{{ event.note }}</p>{% endif %}{% if event.target_parking %}<p>Relacionado con <a href="{% url 'moderation_detail' event.target_parking.pk %}">aporte #{{ event.target_parking.pk }}</a>.</p>{% endif %}<time datetime="{{ event.created_at|date:'c' }}">{{ event.created_at|date:"d/m/Y H:i" }} · {% if event.actor %}{{ event.actor.get_username }}{% else %}Sistema o aporte anónimo{% endif %}</time></li>{% endfor %}</ol>{% else %}<p>No hay eventos editoriales anteriores.</p>{% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
