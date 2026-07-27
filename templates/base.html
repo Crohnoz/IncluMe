@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{% static 'parking-v3.css' %}">
     <link rel="stylesheet" href="{% static 'motion.css' %}">
     {% block extra_head %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'parking-geotag.css' %}">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
@@ -70,6 +71,7 @@
 
     <script src="{% static 'motion.js' %}" defer></script>
     <script src="{% static 'parking-resilience.js' %}" defer></script>
+    <script src="{% static 'parking-geotag.js' %}" defer></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
