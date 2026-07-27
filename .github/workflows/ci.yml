@@ -44,5 +44,21 @@ jobs:
           node --check static/parking-resilience.js
           node --check static/motion.js
           node --check static/service-worker.js
+      - name: Validate interactive preview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          html = Path("preview/index.html").read_text(encoding="utf-8")
+          assert html.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in html
+          assert 'id="main"' in html
+          scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.DOTALL | re.IGNORECASE)
+          inline = "\n".join(script for script in scripts if script.strip())
+          assert inline.strip(), "La preview debe contener interacción JavaScript."
+          Path("/tmp/inclume-preview.js").write_text(inline, encoding="utf-8")
+          PY
+          node --check /tmp/inclume-preview.js
       - name: Validate web manifest JSON
         run: python -m json.tool static/manifest.webmanifest > /dev/null
