@@ -51,12 +51,14 @@
             <div class="site-header__actions">
                 <nav class="desktop-nav" aria-label="Navegación principal">
                     <a href="{% url 'parking' %}" {% if current_page == 'parking' %}aria-current="page"{% endif %}>Encontrar</a>
+                    <a href="{% url 'municipalities' %}" {% if current_page == 'municipalities' %}aria-current="page"{% endif %}>Municipalidades</a>
                     <a href="{% url 'resources' %}" {% if current_page == 'resources' %}aria-current="page"{% endif %}>Recursos</a>
                     <a href="{% url 'contact' %}" {% if current_page == 'contact' %}aria-current="page"{% endif %}>Contacto</a>
                     {% if request.user.is_staff %}
+                        <a href="{% url 'municipal_dashboard' %}" {% if current_page == 'municipal_dashboard' %}aria-current="page"{% endif %}>Panel municipal</a>
                         <a href="{% url 'moderation_queue' %}" {% if current_page == 'moderation' %}aria-current="page"{% endif %}>Moderación</a>
                     {% endif %}
-                    <a class="button button--small" href="{% url 'parking' %}#aportar">Aportar un lugar</a>
+                    <a class="button button--small" href="{% url 'parking_map' %}#aportar">Aportar un lugar</a>
                 </nav>
 
                 <button class="accessibility-button" id="accessibility-button" type="button" aria-haspopup="dialog" aria-controls="accessibility-dialog" aria-label="Abrir preferencias de accesibilidad">
@@ -67,12 +69,14 @@
                     <summary>Menú</summary>
                     <nav aria-label="Navegación móvil">
                         <a href="{% url 'parking' %}">Encontrar estacionamiento</a>
+                        <a href="{% url 'municipalities' %}">Para municipalidades</a>
                         <a href="{% url 'resources' %}">Recursos</a>
                         <a href="{% url 'contact' %}">Contacto</a>
                         {% if request.user.is_staff %}
+                            <a href="{% url 'municipal_dashboard' %}">Panel municipal</a>
                             <a href="{% url 'moderation_queue' %}">Centro de moderación</a>
                         {% endif %}
-                        <a href="{% url 'parking' %}#aportar">Aportar un lugar</a>
+                        <a href="{% url 'parking_map' %}#aportar">Aportar un lugar</a>
                     </nav>
                 </details>
             </div>
@@ -99,6 +103,7 @@
             </div>
             <nav aria-label="Enlaces del pie de página">
                 <a href="{% url 'parking' %}">Estacionamientos</a>
+                <a href="{% url 'municipalities' %}">Municipalidades</a>
                 <a href="{% url 'resources' %}">Recursos</a>
                 <a href="{% url 'contact' %}">Contacto</a>
             </nav>
