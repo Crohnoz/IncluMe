@@ -19,24 +19,33 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 - [x] Diseño responsive y texto grande.
 - [x] CI básico.
 
-## Hito 2 — Calidad de datos
+## Hito 2 — Calidad y confianza de los datos
 
+- [x] Separar confirmaciones positivas de incidencias.
+- [x] Señal temporal de incidencia reciente sin prometer disponibilidad en tiempo real.
+- [x] Evitar verificaciones repetidas mediante identificador irreversible por sesión y ventana temporal.
+- [x] Detectar posibles duplicados por proximidad antes de crear un aporte.
+- [x] Exponer incidencias y agregados de confianza en Django Admin.
 - [ ] Flujo administrativo para aceptar, fusionar o rechazar aportes.
-- [ ] Detección de duplicados por proximidad y nombre.
 - [ ] Evidencia fotográfica con almacenamiento seguro.
 - [ ] Difuminado de rostros y patentes antes de publicar.
 - [ ] Historial de cambios visible.
-- [ ] Puntaje de confianza con decaimiento temporal.
+- [ ] Puntaje de confianza calibrado y validado con usuarios.
 - [ ] Verificación institucional diferenciada.
 
-## Hito 3 — Búsqueda y operación
+## Hito 3 — Búsqueda y operación resiliente
 
 - [ ] Geocodificación de destinos con proveedor respetuoso de cuotas y privacidad.
 - [ ] Búsqueda por radio desde ubicación o destino.
-- [ ] Entrada accesible georreferenciada y recorrido peatonal corto.
-- [ ] Lugares guardados y recientes sin historial sensible.
-- [ ] Funcionamiento offline parcial y borradores sincronizables.
+- [x] Entrada accesible georreferenciada y recorrido peatonal corto como dato estructurado.
+- [x] Lugares guardados en el dispositivo sin historial de desplazamiento.
+- [x] Enlaces compartibles hacia un estacionamiento concreto.
+- [x] Caché de la última lista pública y navegación básica sin conexión.
+- [x] Borradores de aportes y verificaciones encoladas para sincronización.
+- [x] Base PWA instalable y service worker de alcance global.
+- [x] Readiness endpoint para aplicación y base de datos.
 - [ ] Notificaciones opcionales para verificar después de utilizar el lugar.
+- [ ] Sincronización visible y editable de la cola offline.
 
 ## Hito 4 — Validación real
 
@@ -62,3 +71,6 @@ IncluMe debe ayudar a elegir y utilizar un estacionamiento accesible con menos e
 3. El proveedor de tiles debe configurarse para carga de producción y SLA adecuado.
 4. Falta almacenamiento y moderación de fotografías.
 5. La disponibilidad continúa siendo comunitaria, no tiempo real.
+6. La cola offline depende del almacenamiento local del navegador y requiere pruebas en iOS/Android reales.
+7. La detección de duplicados por radio debe evolucionar a PostGIS cuando aumente el volumen.
+8. Falta una política operativa para fusionar registros y resolver verificaciones contradictorias.
