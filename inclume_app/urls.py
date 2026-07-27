@@ -1,14 +1,20 @@
 from django.urls import path
 
-from . import views
+from . import functional_views, views
 
 urlpatterns = [
     path("", views.home, name="home"),
     path("health/", views.health, name="health"),
     path("service-worker.js", views.service_worker, name="service_worker"),
     path("resources/", views.resources, name="resources"),
-    path("parking/", views.parking, name="parking"),
+    path("parking/", functional_views.destination_search, name="parking"),
+    path("parking/mapa/", views.parking, name="parking_map"),
     path("api/parkings/", views.parking_data, name="parking_data"),
+    path(
+        "api/parkings/nearby/",
+        functional_views.nearby_parkings_api,
+        name="nearby_parkings_api",
+    ),
     path("api/parkings/submit/", views.submit_parking, name="submit_parking"),
     path(
         "api/parkings/<int:parking_id>/verify/",
