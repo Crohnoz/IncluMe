@@ -1,95 +1,72 @@
-{% load static %}
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bienvenido a IncluMe</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Botón flotante del chatbot */
-        .chatbot-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-        }
+{% block title %}IncluMe | Estacionamientos accesibles verificados{% endblock %}
+{% block meta_description %}Encuentra estacionamientos accesibles, revisa condiciones reales y abre la ruta en tu aplicación de navegación.{% endblock %}
 
-        .chatbot-button:hover {
-            background-color: #004494;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <nav>
-            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/resources/">Recursos</a></li>
-                <li><a href="/contact/">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <h1>¡Bienvenido a IncluMe!</h1>
-        <p>Una plataforma diseñada para la accesibilidad e inclusión.</p>
-
-        <!-- Sección de noticias -->
-        <section>
-            <h2>Últimas Noticias</h2>
-            <div class="news-carousel">
-                <div class="news-item">
-                    <h3>Mejoras en la calidad de vida para personas con discapacidad</h3>
-                    <p>Una iniciativa liderada por la Universidad de Chile y el SENADIS está promoviendo mejoras en la calidad de vida en residencias para personas con discapacidad.</p>
-                    <a href="https://radio.uchile.cl/2024/12/17/u-de-chile-y-senadis-promueven-calidad-de-vida-en-residencias-para-personas-con-discapacidad/" target="_blank">Leer más</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Sección de videos -->
-        <section>
-            <h2>Videos Educativos</h2>
-            <p>Aprende más sobre los derechos y herramientas disponibles para personas con discapacidad.</p>
-        </section>
-
-        <!-- Sección de próximos eventos -->
-        <section>
-            <h2>Próximos Eventos</h2>
-            <ul>
-                <li>Webinar sobre Accesibilidad Digital - 10 de Marzo, 2025 - <a href="#">Inscríbete aquí</a></li>
-                <li>Taller de Movilidad Reducida - 24 de Marzo, 2025 - <a href="#">Más información</a></li>
-            </ul>
-        </section>
-    </main>
-
-    <footer>
-        <p>© 2025 IncluMe. Todos los derechos reservados.</p>
-        <div>
-            Síguenos en:
-            <a href="https://facebook.com/IncluMe" target="_blank"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://twitter.com/IncluMe" target="_blank"><i class="fab fa-twitter"></i></a>
-            <a href="https://instagram.com/IncluMe" target="_blank"><i class="fab fa-instagram"></i></a>
+{% block content %}
+<section class="hero section-shell">
+    <div class="hero__copy">
+        <span class="eyebrow">Accesibilidad construida en comunidad</span>
+        <h1>Encuentra un estacionamiento que realmente te sirva.</h1>
+        <p class="lead">IncluMe reúne ubicación, distancia a la entrada, espacio de transferencia, estado de la ruta y verificaciones recientes para ayudarte a decidir antes de viajar.</p>
+        <div class="button-row">
+            <a class="button button--primary" href="{% url 'parking' %}">Encontrar estacionamiento</a>
+            <a class="button button--secondary" href="{% url 'parking' %}#aportar">Aportar un lugar</a>
         </div>
-    </footer>
+        <p class="privacy-note">Puedes usar IncluMe sin crear una cuenta y sin compartir tu diagnóstico.</p>
+    </div>
+    <div class="hero__visual" aria-label="Resumen del flujo de IncluMe">
+        <article class="preview-card preview-card--main">
+            <div class="preview-card__topline">
+                <span class="status-chip status-chip--success">Mejor opción</span>
+                <span class="status-chip">18 m a la entrada</span>
+            </div>
+            <h2>Clínica Nueva Providencia</h2>
+            <p>Estacionamiento 02 · costado norte</p>
+            <div class="trust-panel">
+                <strong>Ruta verificada hace 3 días</strong>
+                <span>Último reporte de ocupación: hace 12 min</span>
+                <small>La disponibilidad no está garantizada.</small>
+            </div>
+            <span class="button button--primary button--block" aria-hidden="true">Cómo llegar</span>
+        </article>
+        <article class="preview-card preview-card--backup">
+            <strong>Plan B compatible</strong>
+            <span>A 120 metros</span>
+        </article>
+    </div>
+</section>
 
-    <!-- Botón flotante para el chatbot -->
-    <button class="chatbot-button" onclick="window.open('https://chatgpt.com/g/g-678d1ed2778c8191b3b39f4185a95b5b-inclume', '_blank')">
-        <i class="fas fa-comments"></i>
-    </button>
-</body>
-</html>
+<section class="section-shell section-block" aria-labelledby="how-title">
+    <div class="section-heading">
+        <span class="eyebrow">Una decisión más clara</span>
+        <h2 id="how-title">IncluMe hace el trabajo previo a la navegación.</h2>
+    </div>
+    <div class="feature-grid">
+        <article class="feature-card">
+            <span class="feature-card__number">1</span>
+            <h3>Busca cerca de ti</h3>
+            <p>Usa tu ubicación o una dirección, sin seguimiento permanente.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-card__number">2</span>
+            <h3>Decide según tus necesidades</h3>
+            <p>Filtra por distancia útil, lado de transferencia, pendientes y ruta sin escalones.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-card__number">3</span>
+            <h3>Abre tu navegador preferido</h3>
+            <p>Envía la coordenada exacta a Waze, Google Maps, Apple Maps o la aplicación compatible.</p>
+        </article>
+    </div>
+</section>
+
+<section class="section-shell community-banner">
+    <div>
+        <span class="eyebrow">El dato más útil es el dato reciente</span>
+        <h2>Confirma un lugar en menos de 20 segundos.</h2>
+        <p>Después de usarlo, informa si el espacio lateral, la señalización y la ruta siguen disponibles. Cada aporte pasa a formar parte del nivel de confianza del lugar.</p>
+    </div>
+    <a class="button button--secondary" href="{% url 'parking' %}">Explorar el mapa</a>
+</section>
+{% endblock %}

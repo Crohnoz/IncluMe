@@ -1,0 +1,65 @@
+{% load static %}
+<!doctype html>
+<html lang="es-CL">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0e385e">
+    <meta name="description" content="{% block meta_description %}IncluMe ayuda a encontrar y verificar estacionamientos accesibles.{% endblock %}">
+    <title>{% block title %}IncluMe{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
+    <header class="site-header">
+        <div class="site-header__inner">
+            <a class="brand" href="{% url 'home' %}" aria-label="IncluMe, ir al inicio">
+                <span class="brand__mark" aria-hidden="true">I</span>
+                <span class="brand__name">IncluMe</span>
+            </a>
+
+            <nav class="desktop-nav" aria-label="Navegación principal">
+                <a href="{% url 'parking' %}" {% if current_page == 'parking' %}aria-current="page"{% endif %}>Encontrar</a>
+                <a href="{% url 'resources' %}" {% if current_page == 'resources' %}aria-current="page"{% endif %}>Recursos</a>
+                <a href="{% url 'contact' %}" {% if current_page == 'contact' %}aria-current="page"{% endif %}>Contacto</a>
+                <a class="button button--small" href="{% url 'parking' %}#aportar">Aportar un lugar</a>
+            </nav>
+
+            <details class="mobile-nav">
+                <summary>Menú</summary>
+                <nav aria-label="Navegación móvil">
+                    <a href="{% url 'parking' %}">Encontrar estacionamiento</a>
+                    <a href="{% url 'resources' %}">Recursos</a>
+                    <a href="{% url 'contact' %}">Contacto</a>
+                    <a href="{% url 'parking' %}#aportar">Aportar un lugar</a>
+                </nav>
+            </details>
+        </div>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <div>
+                <strong>IncluMe</strong>
+                <p>Información colaborativa para tomar decisiones de accesibilidad con mayor confianza.</p>
+            </div>
+            <nav aria-label="Enlaces del pie de página">
+                <a href="{% url 'parking' %}">Estacionamientos</a>
+                <a href="{% url 'resources' %}">Recursos</a>
+                <a href="{% url 'contact' %}">Contacto</a>
+            </nav>
+            <p class="site-footer__legal">© 2026 IncluMe. Los datos comunitarios no garantizan disponibilidad en tiempo real.</p>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
