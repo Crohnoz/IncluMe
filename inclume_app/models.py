@@ -30,6 +30,13 @@ class Parking(models.Model):
         UNAVAILABLE = "unavailable", "Temporalmente no disponible"
         REMOVED = "removed", "Retirado"
 
+    class ModerationStatus(models.TextChoices):
+        PENDING = "pending", "Pendiente de revisión"
+        APPROVED = "approved", "Aprobado"
+        CHANGES_REQUESTED = "changes_requested", "Requiere correcciones"
+        REJECTED = "rejected", "Rechazado"
+        MERGED = "merged", "Fusionado"
+
     class TransferSide(models.TextChoices):
         UNKNOWN = "unknown", "No informado"
         LEFT = "left", "Lado izquierdo"
@@ -131,6 +138,33 @@ class Parking(models.Model):
         db_index=True,
         help_text="Solo los registros publicados aparecen en la aplicación pública.",
     )
+    moderation_status = models.CharField(
+        max_length=24,
+        choices=ModerationStatus.choices,
+        default=ModerationStatus.APPROVED,
+        db_index=True,
+        help_text="Estado editorial independiente de la verificación comunitaria del lugar.",
+    )
+    moderation_notes = models.TextField(
+        blank=True,
+        help_text="Motivo o instrucción de la decisión editorial más reciente.",
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parking_moderation_reviews",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    merged_into = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="merged_sources",
+        help_text="Registro canónico que absorbió este aporte cuando fue fusionado.",
+    )
     verification_count = models.PositiveIntegerField(
         default=0,
         help_text="Cantidad de confirmaciones positivas registradas.",
@@ -184,6 +218,10 @@ class Parking(models.Model):
                 fields=["last_reported_at", "last_issue_type"],
                 name="inclume_parking_issue_idx",
             ),
+            models.Index(
+                fields=["moderation_status", "created_at"],
+                name="inclume_parking_mod_queue_idx",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -206,6 +244,13 @@ class Parking(models.Model):
             self.last_issue_type,
             ParkingIssueType.OTHER.label,
         )
+
+    @property
+    def is_moderation_pending(self) -> bool:
+        return self.moderation_status in {
+            self.ModerationStatus.PENDING,
+            self.ModerationStatus.CHANGES_REQUESTED,
+        }
 
 
 class ParkingVerification(models.Model):
@@ -275,6 +320,53 @@ class ParkingVerification(models.Model):
             and self.accessibility_confirmed
             and self.issue_type == ParkingIssueType.NONE
         )
+
+
+class ParkingModerationEvent(models.Model):
+    class Action(models.TextChoices):
+        SUBMITTED = "submitted", "Aporte recibido"
+        EDITED = "edited", "Datos editados"
+        APPROVED = "approved", "Aprobado"
+        CHANGES_REQUESTED = "changes_requested", "Correcciones solicitadas"
+        REJECTED = "rejected", "Rechazado"
+        MERGED = "merged", "Fusionado"
+        REOPENED = "reopened", "Reabierto"
+
+    parking = models.ForeignKey(
+        Parking,
+        on_delete=models.CASCADE,
+        related_name="moderation_events",
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parking_moderation_events",
+    )
+    action = models.CharField(max_length=24, choices=Action.choices)
+    note = models.TextField(blank=True)
+    target_parking = models.ForeignKey(
+        Parking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="moderation_target_events",
+    )
+    snapshot = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["parking", "-created_at"],
+                name="inclume_mod_event_time_idx",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.get_action_display()} — {self.parking}"
 
 
 class EducationalResource(models.Model):
