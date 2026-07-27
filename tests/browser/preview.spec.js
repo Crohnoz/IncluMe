@@ -21,6 +21,14 @@ test("core interface has no serious or critical automated accessibility violatio
   await expect(page.locator("#parking-list")).toBeVisible();
 });
 
+test("brand mark is visible, named by its link and decorative internally", async ({ page }) => {
+  const brand = page.getByRole("link", { name: "IncluMe, ir al mapa" });
+  await expect(brand).toBeVisible();
+  await expect(brand.locator(".brand-logo")).toBeVisible();
+  await expect(brand.locator(".brand__mark")).toHaveAttribute("aria-hidden", "true");
+  await expect(brand.locator(".brand__name")).toHaveText("IncluMe");
+});
+
 test("accessibility preferences apply immediately and persist", async ({ page }) => {
   await page.getByRole("button", { name: "Accesibilidad" }).click();
   await page.getByLabel("Extra grande").check();
@@ -36,10 +44,16 @@ test("accessibility preferences apply immediately and persist", async ({ page })
   await expect(page.locator("html")).toHaveAttribute("data-reduce-motion", "true");
   await expect(page.locator("html")).toHaveAttribute("data-map-style", "calm");
 
+  const logoMotion = await page.locator(".brand-logo").evaluate((node) => getComputedStyle(node).animationName);
+  const orbitMotion = await page.locator(".brand-logo__orbit").evaluate((node) => getComputedStyle(node).animationName);
+  expect(logoMotion).toBe("none");
+  expect(orbitMotion).toBe("none");
+
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-text-scale", "x-large");
   await expect(page.locator("html")).toHaveAttribute("data-high-contrast", "true");
   await expect(page.locator("html")).toHaveAttribute("data-map-style", "calm");
+  await expect(page.locator("html")).toHaveAttribute("data-reduce-motion", "true");
 });
 
 test("a user can place, describe, persist and remove a Chile geotag", async ({ page }) => {
