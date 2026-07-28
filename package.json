@@ -1,9 +1,10 @@
 {
   "name": "inclume-accessibility-tests",
   "private": true,
-  "version": "4.0.0",
+  "version": "5.0.0",
   "scripts": {
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:admin-browser": "playwright test --config=playwright.admin.config.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
