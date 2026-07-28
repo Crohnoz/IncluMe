@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - staging
       - recovery/render-b793a8f
       - feature/parking-community-mvp
 
