@@ -31,6 +31,7 @@ def build() -> None:
     feedback_dir = DESTINATION / "feedback"
     feedback_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / "netlify" / "citizen-feedback.html", feedback_dir / "index.html")
+    shutil.copy2(ROOT / "netlify" / "intake-client.js", DESTINATION / "intake-client.js")
 
     thanks_dir = DESTINATION / "gracias"
     thanks_dir.mkdir(parents=True, exist_ok=True)
@@ -40,6 +41,9 @@ def build() -> None:
     assert 'data-netlify="true"' in feedback
     assert 'netlify-honeypot="bot-field"' in feedback
     assert 'name="form-name" value="reporte-ciudadano"' in feedback
+    assert 'data-intake-kind="citizen_report"' in feedback
+    assert '/intake-client.js' in feedback
+    assert (DESTINATION / "intake-client.js").exists()
 
 
 if __name__ == "__main__":
