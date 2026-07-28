@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / "netlify-municipal-dist"
+STATUS_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
 
 FORM_STYLES = """
 <style>
@@ -45,13 +46,20 @@ def build() -> None:
     thanks_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / "netlify" / "thanks-municipal.html", thanks_dir / "index.html")
 
+    status_dir = DESTINATION / "estado"
+    status_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "netlify" / "submission-status.html", status_dir / "index.html")
+
     built = (DESTINATION / "index.html").read_text(encoding="utf-8")
+    status_html = (status_dir / "index.html").read_text(encoding="utf-8")
     assert 'data-netlify="true"' in built
     assert 'netlify-honeypot="bot-field"' in built
     assert 'name="form-name" value="solicitud-piloto-municipal"' in built
     assert 'data-intake-kind="municipal_request"' in built
     assert '/intake-client.js' in built
     assert (DESTINATION / "intake-client.js").exists()
+    assert STATUS_ENDPOINT in status_html
+    assert 'id="status-form"' in status_html
 
 
 if __name__ == "__main__":
