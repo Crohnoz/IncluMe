@@ -1,36 +1,29 @@
-{% load static %}
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contacto - IncluMe</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-</head>
-<body>
-    <header>
-        <nav>
-            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/resources/">Recursos</a></li>
-                <li><a href="/parking/">Estacionamientos</a></li>
-                <li><a href="/contact/">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <h1>Contacto</h1>
-        <p>Si tienes alguna pregunta o necesitas asistencia, por favor contáctanos usando la información a continuación:</p>
-        <ul>
-            <li>Email: contacto@inclume.org</li>
-            <li>Teléfono: +56 9 1234 5678</li>
-            <li>Dirección: Vasco de Gama 4702, Las Condes, Santiago, Chile</li>
-        </ul>
-    </main>
-    <footer>
-        <p>© 2025 IncluMe. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+{% block title %}Contacto | IncluMe{% endblock %}
+{% block meta_description %}Canales de contacto y colaboración para el piloto de IncluMe.{% endblock %}
+
+{% block content %}
+<section class="page-hero section-shell">
+    <span class="eyebrow">Construyamos información confiable</span>
+    <h1>Contacto y colaboración</h1>
+    <p class="lead">IncluMe está en etapa de desarrollo. Puedes colaborar reportando lugares, errores de accesibilidad o instituciones que quieran mantener información oficial.</p>
+</section>
+
+<section class="section-shell contact-grid">
+    <article class="contact-card">
+        <h2>Aportar un estacionamiento</h2>
+        <p>Marca la ubicación, describe el acceso y envía datos observables. No pedimos diagnóstico ni credencial.</p>
+        <a class="button button--primary" href="{% url 'parking' %}#aportar">Abrir formulario</a>
+    </article>
+    <article class="contact-card">
+        <h2>Contacto del proyecto</h2>
+        <p>Para alianzas, pruebas de accesibilidad o comentarios sobre el piloto:</p>
+        <a class="text-link" href="mailto:contacto@inclume.org">contacto@inclume.org</a>
+    </article>
+    <article class="contact-card">
+        <h2>Privacidad</h2>
+        <p>No publiques rostros, patentes, credenciales ni diagnósticos en fotografías o comentarios. La moderación puede retirar contenido que exponga datos personales.</p>
+    </article>
+</section>
+{% endblock %}

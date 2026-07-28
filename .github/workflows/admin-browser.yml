@@ -1,0 +1,63 @@
+name: IncluMe Admin Browser
+
+on:
+  pull_request:
+  push:
+    branches:
+      - feature/parking-community-mvp
+      - netlify-municipalidades
+    paths:
+      - netlify/team-admin.html
+      - netlify/admin-client.js
+      - scripts/build_netlify_municipal.py
+      - tests/admin-browser/**
+      - playwright.admin.config.js
+      - package.json
+      - package-lock.json
+      - .github/workflows/admin-browser.yml
+
+permissions:
+  contents: read
+
+jobs:
+  admin-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: |
+          npm install --no-audit --no-fund --silent
+          npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
+
+      - name: Run moderation browser and axe tests
+        id: admin_tests
+        shell: bash
+        run: |
+          set +e
+          npm run test:admin-browser 2>&1 | tee /tmp/admin-browser-tests.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Upload failure evidence
+        if: failure() && steps.admin_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-browser-test-log
+          path: |
+            /tmp/admin-browser-tests.log
+            test-results/
+          retention-days: 3

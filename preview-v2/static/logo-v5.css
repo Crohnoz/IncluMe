@@ -1,0 +1,170 @@
+/* IncluMe v6 brand mark — wheelchair, location and forward movement. */
+
+.brand {
+    gap: 0.72rem;
+}
+
+.brand__mark {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    background: none !important;
+    box-shadow: none !important;
+    overflow: visible;
+    transform: none !important;
+    isolation: isolate;
+}
+
+/* The inline SVG remains a no-JS fallback. The current identity comes from the shared PWA icon. */
+.brand-logo {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.brand__mark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: url("images/inclume-app-icon.svg") center / contain no-repeat;
+    filter: drop-shadow(0 8px 14px rgba(7, 95, 196, 0.24));
+    transform-origin: 46% 58%;
+    animation: inclume-wheelchair-enter 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition:
+        transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 300ms ease;
+}
+
+.brand__mark::after {
+    content: "";
+    position: absolute;
+    inset: 6px -3px 3px 5px;
+    z-index: 0;
+    border: 2px solid rgba(0, 124, 112, 0.48);
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    opacity: 0;
+    transform: rotate(-42deg) scale(0.72);
+    transform-origin: center;
+    pointer-events: none;
+}
+
+.brand:hover .brand__mark::before,
+.brand:focus-visible .brand__mark::before {
+    transform: translateX(2px) translateY(-1px) rotate(2deg) scale(1.045);
+    filter: drop-shadow(0 11px 20px rgba(7, 95, 196, 0.3));
+}
+
+.brand:hover .brand__mark::after,
+.brand:focus-visible .brand__mark::after {
+    animation: inclume-route-sweep 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand__name {
+    display: inline-flex;
+    align-items: baseline;
+    letter-spacing: -0.035em;
+}
+
+.brand__name-accent {
+    margin-left: 0.04em;
+    color: var(--color-violet, #6846bd);
+    transform-origin: left center;
+    transition:
+        color 220ms ease,
+        transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.brand:hover .brand__name-accent,
+.brand:focus-visible .brand__name-accent {
+    color: var(--color-turquoise, #007c70);
+    transform: translateX(1px);
+}
+
+body[data-high-contrast="true"] .brand__name-accent,
+html[data-high-contrast="true"] .brand__name-accent {
+    color: var(--color-blue, #004fb4);
+    text-decoration: underline;
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.16em;
+}
+
+body[data-high-contrast="true"] .brand__mark,
+html[data-high-contrast="true"] .brand__mark {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+@keyframes inclume-wheelchair-enter {
+    0% {
+        opacity: 0;
+        transform: translateX(-7px) translateY(3px) scale(0.76) rotate(-7deg);
+    }
+    64% {
+        opacity: 1;
+        transform: translateX(1.5px) translateY(-1px) scale(1.04) rotate(1.5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes inclume-route-sweep {
+    0% {
+        opacity: 0;
+        transform: rotate(-58deg) scale(0.68);
+    }
+    36% {
+        opacity: 0.72;
+    }
+    100% {
+        opacity: 0;
+        transform: rotate(62deg) scale(1.08);
+    }
+}
+
+@media (max-width: 520px) {
+    .brand__mark {
+        width: 44px;
+        height: 44px;
+        flex-basis: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand__mark::before,
+    .brand__mark::after,
+    .brand__name-accent {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+
+    .brand__mark::after {
+        display: none;
+    }
+}
+
+html[data-reduced-motion="true"] .brand__mark::before,
+html[data-reduced-motion="true"] .brand__mark::after,
+html[data-reduced-motion="true"] .brand__name-accent,
+html[data-reduce-motion="true"] .brand__mark::before,
+html[data-reduce-motion="true"] .brand__mark::after,
+html[data-reduce-motion="true"] .brand__name-accent {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+}
+
+html[data-reduced-motion="true"] .brand__mark::after,
+html[data-reduce-motion="true"] .brand__mark::after {
+    display: none;
+}

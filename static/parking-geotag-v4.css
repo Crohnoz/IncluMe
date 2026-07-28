@@ -1,0 +1,136 @@
+/* IncluMe v4 geotag accessibility and colour refinement. */
+
+.parking-map-panel,
+#contribution-geotag-map {
+    background: #dcecf5;
+}
+
+#map .leaflet-tile-pane,
+#contribution-geotag-map .leaflet-tile-pane {
+    filter: grayscale(0.14) saturate(0.88) brightness(1.03) contrast(0.98);
+}
+
+body[data-map-style="calm"] #map .leaflet-tile-pane,
+body[data-map-style="calm"] #contribution-geotag-map .leaflet-tile-pane {
+    filter: grayscale(0.64) saturate(0.48) brightness(1.05) contrast(0.94);
+}
+
+.inclume-marker {
+    min-width: 44px;
+    min-height: 44px;
+    border: 4px solid #fff;
+    color: #fff;
+    background: var(--color-blue);
+    box-shadow: 0 8px 22px rgba(18, 58, 90, 0.26);
+}
+
+.inclume-marker--best {
+    background: var(--color-turquoise);
+}
+
+.inclume-marker--warning {
+    background: var(--color-amber);
+}
+
+.map-accessibility-note {
+    position: absolute;
+    z-index: 620;
+    left: 1rem;
+    bottom: 1rem;
+    max-width: min(560px, calc(100% - 2rem));
+    margin: 0;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #8fb3d2;
+    border-radius: 14px;
+    color: var(--color-navy);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 10px 28px rgba(18, 58, 90, 0.16);
+    font-size: 0.9rem;
+}
+
+#map.is-pin-mode::after {
+    bottom: 5.5rem;
+    border-color: #b5d5f0;
+    background: rgba(7, 79, 168, 0.96);
+}
+
+.pin-parking-button[aria-pressed="true"] {
+    border-color: var(--color-violet);
+    background: var(--color-violet);
+}
+
+.geotag-picker {
+    border: 2px solid #a9cbe6;
+    background:
+        linear-gradient(145deg, rgba(232, 243, 255, 0.96), rgba(241, 236, 255, 0.94));
+}
+
+#contribution-geotag-map {
+    min-height: 340px;
+    border: 2px solid #83a9c8;
+}
+
+.inclume-geotag-pin {
+    width: 48px;
+    height: 48px;
+    border-width: 4px;
+    background: var(--color-blue);
+}
+
+.inclume-geotag-pin--pending {
+    background: var(--color-violet);
+}
+
+.geotag-nudge {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    padding: 0.75rem;
+    border: 1px solid #b9cddd;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.geotag-nudge button {
+    min-height: 48px;
+    border: 1px solid #8eabc2;
+    border-radius: 12px;
+    color: var(--color-navy);
+    background: var(--color-blue-soft);
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.geotag-nudge button:hover {
+    border-color: var(--color-blue);
+    background: #dcedff;
+}
+
+.geotag-picker__status {
+    min-height: 2.5rem;
+    padding: 0.65rem 0.75rem;
+    border-left: 5px solid var(--color-turquoise);
+    border-radius: 0 10px 10px 0;
+    color: var(--color-ink);
+    background: var(--color-turquoise-soft);
+}
+
+@media (max-width: 680px) {
+    .map-accessibility-note {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    #map.is-pin-mode::after {
+        bottom: 1rem;
+    }
+
+    .geotag-nudge {
+        grid-template-columns: 1fr;
+    }
+}

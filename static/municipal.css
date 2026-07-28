@@ -1,0 +1,348 @@
+.municipal-hero {
+    background:
+        radial-gradient(circle at 82% 18%, rgba(85, 227, 207, 0.24), transparent 24rem),
+        radial-gradient(circle at 12% 0%, rgba(104, 70, 189, 0.18), transparent 22rem),
+        linear-gradient(135deg, #eef7ff 0%, #fbf8ff 52%, #effcf8 100%);
+    border-bottom: 1px solid rgba(7, 95, 196, 0.14);
+    padding: clamp(3rem, 8vw, 7rem) 0;
+}
+
+.municipal-hero__grid,
+.municipal-section--split,
+.municipal-final-cta {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+    align-items: center;
+}
+
+.municipal-hero h1,
+.municipal-section h2,
+.municipal-governance h2,
+.municipal-dashboard h1 {
+    max-width: 22ch;
+}
+
+.municipal-lead {
+    max-width: 70ch;
+    font-size: clamp(1.08rem, 2vw, 1.3rem);
+    line-height: 1.7;
+}
+
+.municipal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.municipal-note,
+.empty-copy {
+    color: var(--color-text-muted, #42526a);
+    line-height: 1.6;
+}
+
+.municipal-principles,
+.municipal-card {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(7, 95, 196, 0.16);
+    border-radius: 1.5rem;
+    box-shadow: 0 1.5rem 4rem rgba(23, 52, 84, 0.12);
+    padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+.municipal-principles ul,
+.municipal-card ol {
+    margin: 1rem 0 0;
+    padding-left: 1.2rem;
+}
+
+.municipal-principles li,
+.municipal-card li {
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.municipal-section {
+    padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+.municipal-section__heading,
+.municipal-dashboard__header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.municipal-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.municipal-metrics article {
+    min-height: 9rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(145deg, #ffffff, #f4f9ff);
+    border: 1px solid rgba(7, 95, 196, 0.14);
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+}
+
+.municipal-metrics article:nth-child(3n + 2) {
+    background: linear-gradient(145deg, #ffffff, #f5f1ff);
+}
+
+.municipal-metrics article:nth-child(3n) {
+    background: linear-gradient(145deg, #ffffff, #effcf8);
+}
+
+.municipal-metrics strong {
+    color: #075fc4;
+    font-family: Manrope, sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1;
+}
+
+.municipal-metrics span {
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.coverage-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.coverage-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    background: #f5f9ff;
+    border: 1px solid rgba(7, 95, 196, 0.12);
+    border-radius: 1rem;
+}
+
+.municipal-governance {
+    background: #0b2550;
+    color: #ffffff;
+    padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+.municipal-governance .eyebrow {
+    color: #88f1df;
+}
+
+.governance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.governance-grid article {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1.1rem;
+    padding: 1.25rem;
+}
+
+.governance-grid p {
+    color: #e4edf8;
+    line-height: 1.55;
+}
+
+.municipal-dashboard {
+    padding-block: clamp(2rem, 6vw, 5rem);
+}
+
+.municipal-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: #f4f8ff;
+    border: 1px solid rgba(7, 95, 196, 0.14);
+    border-radius: 1.25rem;
+}
+
+.municipal-filter label {
+    display: grid;
+    gap: 0.4rem;
+    flex: 1 1 20rem;
+    font-weight: 700;
+}
+
+.municipal-filter input {
+    min-height: 3rem;
+    width: 100%;
+    border: 2px solid #b7c7dc;
+    border-radius: 0.8rem;
+    padding-inline: 0.9rem;
+    font: inherit;
+}
+
+.municipal-metrics--compact {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin-bottom: 1.5rem;
+}
+
+.municipal-metrics--compact article {
+    min-height: 7rem;
+}
+
+.municipal-metrics--compact strong {
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+}
+
+.municipal-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #d5dfec;
+    border-radius: 1rem;
+    background: #ffffff;
+}
+
+.municipal-table {
+    width: 100%;
+    min-width: 68rem;
+    border-collapse: collapse;
+}
+
+.municipal-table caption {
+    text-align: left;
+    padding: 1rem;
+    font-weight: 700;
+}
+
+.municipal-table th,
+.municipal-table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.9rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.municipal-table th {
+    background: #eef5ff;
+    color: #15345d;
+}
+
+.municipal-table td {
+    max-width: 18rem;
+}
+
+.municipal-table td > * {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.municipal-table td a {
+    color: #075fc4;
+    font-weight: 700;
+}
+
+@media (max-width: 960px) {
+    .municipal-hero__grid,
+    .municipal-section--split,
+    .municipal-final-cta {
+        grid-template-columns: 1fr;
+    }
+
+    .governance-grid,
+    .municipal-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .municipal-metrics--compact {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .municipal-section__heading,
+    .municipal-dashboard__header {
+        align-items: start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 620px) {
+    .municipal-metrics,
+    .municipal-metrics--compact,
+    .governance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .municipal-table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+    }
+
+    .municipal-table,
+    .municipal-table tbody,
+    .municipal-table tr,
+    .municipal-table td {
+        display: block;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .municipal-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+    }
+
+    .municipal-table tr {
+        margin-bottom: 1rem;
+        background: #ffffff;
+        border: 1px solid #d5dfec;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .municipal-table td {
+        max-width: none;
+        padding-left: 8.5rem;
+        position: relative;
+    }
+
+    .municipal-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.9rem;
+        top: 0.9rem;
+        width: 6.8rem;
+        font-weight: 800;
+        color: #15345d;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .municipal-metrics article,
+    .governance-grid article,
+    .municipal-principles {
+        animation: municipal-rise 480ms ease both;
+    }
+
+    .municipal-metrics article:nth-child(2),
+    .governance-grid article:nth-child(2) { animation-delay: 70ms; }
+    .municipal-metrics article:nth-child(3),
+    .governance-grid article:nth-child(3) { animation-delay: 140ms; }
+    .municipal-metrics article:nth-child(4),
+    .governance-grid article:nth-child(4) { animation-delay: 210ms; }
+}
+
+@keyframes municipal-rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}

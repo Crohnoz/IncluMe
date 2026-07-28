@@ -1,38 +1,41 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derechos y Recursos sobre Discapacidad</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-</head>
-<body>
-    <header>
-        <!-- Incluye la misma barra de navegación aquí -->
-        <nav>
-            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/resources/">Recursos</a></li>
-                <li><a href="/parking/">Estacionamientos</a></li>
-                <li><a href="/contact/">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
+{% extends "base.html" %}
 
-    <main>
-        <h1>Derechos y Recursos sobre Discapacidad</h1>
-        <section>
-            <h2>Ley Karin: Protección en el Trabajo</h2>
-            <p>La Ley Karin se centra en los derechos laborales de las personas con discapacidad, asegurando medidas de integración y adaptación del entorno laboral para promover la inclusión.</p>
-            <a href="https://previsionsocial.gob.cl/ley-karin/"  target="_blank">Leer Más</a>
-        </section>
-        <!-- Añade más secciones para cada ley o recurso -->
-    </main>
-    
-    <footer>
-        © 2025 IncluMe. Todos los derechos reservados.
-    </footer>
-</body>
-</html>
+{% block title %}Recursos | IncluMe{% endblock %}
+{% block meta_description %}Directorio inicial de recursos oficiales sobre discapacidad, derechos y servicios en Chile.{% endblock %}
+
+{% block content %}
+<section class="page-hero section-shell">
+    <span class="eyebrow">Información oficial, sin sobrecarga</span>
+    <h1>Recursos de accesibilidad y discapacidad</h1>
+    <p class="lead">Este directorio prioriza fuentes oficiales. IncluMe no reemplaza asesoría jurídica, médica o social especializada.</p>
+</section>
+
+<section class="section-shell resource-grid" aria-label="Directorio de recursos">
+    <article class="resource-card">
+        <span class="status-chip">Servicios públicos</span>
+        <h2>SENADIS</h2>
+        <p>Programas, orientación institucional y contenidos sobre inclusión de personas con discapacidad.</p>
+        <a class="text-link" href="https://www.senadis.gob.cl/" target="_blank" rel="noopener noreferrer">Abrir sitio oficial <span aria-hidden="true">↗</span></a>
+    </article>
+    <article class="resource-card">
+        <span class="status-chip">Trámites</span>
+        <h2>ChileAtiende</h2>
+        <p>Información sobre credencial de discapacidad, beneficios y trámites del Estado.</p>
+        <a class="text-link" href="https://www.chileatiende.gob.cl/" target="_blank" rel="noopener noreferrer">Abrir sitio oficial <span aria-hidden="true">↗</span></a>
+    </article>
+    <article class="resource-card">
+        <span class="status-chip">Normativa</span>
+        <h2>LeyChile</h2>
+        <p>Consulta textos legales vigentes directamente en la Biblioteca del Congreso Nacional.</p>
+        <a class="text-link" href="https://www.bcn.cl/leychile/" target="_blank" rel="noopener noreferrer">Consultar normativa <span aria-hidden="true">↗</span></a>
+    </article>
+</section>
+
+<section class="section-shell info-callout">
+    <div>
+        <h2>¿Falta un recurso importante?</h2>
+        <p>Durante el piloto, priorizaremos instituciones y servicios que puedan verificarse y mantenerse actualizados.</p>
+    </div>
+    <a class="button button--secondary" href="{% url 'contact' %}">Sugerir un recurso</a>
+</section>
+{% endblock %}

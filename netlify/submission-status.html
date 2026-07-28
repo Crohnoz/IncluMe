@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#075fc4">
+  <meta name="description" content="Consulta el estado de un reporte ciudadano o solicitud municipal de IncluMe mediante su referencia.">
+  <title>Consultar estado — IncluMe</title>
+  <style>
+    :root{--blue:#075fc4;--violet:#6846bd;--teal:#007c70;--ink:#14233b;--muted:#52637a;--line:#c5d5e5;--paper:#fff;--error:#982d25}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 90% 5%,#dff9f2,transparent 25rem),radial-gradient(circle at 5% 0,#ede7ff,transparent 24rem),#f5f9ff;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}.shell{width:min(760px,calc(100% - 2rem));margin:auto}.skip{position:absolute;left:-9999px}.skip:focus{left:1rem;top:1rem;background:#fff;padding:.8rem;z-index:10}.header{background:rgba(255,255,255,.95);border-bottom:1px solid var(--line)}.header__in{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:1rem}.brand{font-weight:900;font-size:1.3rem;text-decoration:none;color:var(--ink)}.brand b{color:var(--violet)}main{padding:clamp(2rem,8vw,5rem) 0}.card{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:clamp(1.2rem,5vw,2.5rem);box-shadow:0 22px 60px rgba(11,37,80,.12)}.eyebrow{color:#4e3196;font-weight:900;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}h1{font-size:clamp(2rem,6vw,3.6rem);line-height:1.04;margin:.4rem 0 1rem}.field{display:grid;gap:.4rem;margin-top:1rem;font-weight:800}.field input{width:100%;min-height:52px;border:2px solid var(--line);border-radius:13px;padding:.75rem .9rem;font:inherit;text-transform:uppercase}.field input:focus,.button:focus{outline:4px solid #ffd463;outline-offset:2px;border-color:var(--blue)}.actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}.button{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:.75rem 1rem;border:2px solid transparent;border-radius:14px;font-weight:900;text-decoration:none;cursor:pointer}.primary{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff}.secondary{background:#fff;border-color:#9fb5ce;color:#0b2550}.status{min-height:1.5rem;margin-top:1rem;font-weight:800;color:var(--teal)}.status[data-state="error"]{color:var(--error)}.result{margin-top:1.2rem;border:1px solid var(--line);border-radius:18px;padding:1rem;background:#f8fbff}.result h2{margin:.2rem 0 .5rem}.reference{display:inline-flex;border-radius:999px;background:#e8f3ff;color:#064b9d;padding:.4rem .7rem;font-weight:900;letter-spacing:.04em}.timeline{display:grid;gap:.65rem;margin:1rem 0 0}.timeline div{border-left:5px solid var(--teal);padding:.55rem .75rem;background:#fff;border-radius:0 12px 12px 0}.timeline span,.timeline strong{display:block}.timeline span{color:var(--muted)}.privacy{margin-top:1.2rem;background:#fff5dc;border:1px solid #edca79;color:#633b00;border-radius:14px;padding:.85rem 1rem}.footer{padding:2rem 0;color:var(--muted)}@media(max-width:620px){.header__in{align-items:flex-start;flex-direction:column;padding-block:.8rem}.actions{display:grid}.button{width:100%}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  <header class="header"><div class="shell header__in"><a class="brand" href="https://inclume-chile.netlify.app/">Inclu<b>Me</b></a><a class="button secondary" href="https://inclume-chile.netlify.app/">Volver a la aplicación</a></div></header>
+  <main id="main" class="shell">
+    <article class="card">
+      <span class="eyebrow">Seguimiento transparente</span>
+      <h1>Consulta el estado de tu envío.</h1>
+      <p>Escribe la referencia recibida después de enviar un reporte ciudadano o una solicitud institucional.</p>
+      <form id="status-form">
+        <label class="field"><span>Referencia</span><input id="reference" name="ref" required maxlength="16" pattern="(CIU|MUN)-[A-Fa-f0-9]{12}" placeholder="CIU-1A2B3C4D5E6F" autocomplete="off" spellcheck="false" aria-describedby="reference-help"></label>
+        <small id="reference-help">Formato: CIU- seguido de 12 caracteres, o MUN- seguido de 12 caracteres.</small>
+        <div class="actions"><button class="button primary" type="submit">Consultar estado</button><a class="button secondary" href="https://inclume-municipalidades.netlify.app/">Portal municipal</a></div>
+      </form>
+      <p class="status" id="status" role="status" aria-live="polite" tabindex="-1"></p>
+      <section class="result" id="result" aria-labelledby="result-title" hidden>
+        <span class="reference" id="result-reference"></span>
+        <h2 id="result-title"></h2>
+        <p id="result-description"></p>
+        <div class="timeline">
+          <div><strong>Recibido</strong><span id="received-at"></span></div>
+          <div><strong>Última actualización</strong><span id="updated-at"></span></div>
+        </div>
+      </section>
+      <div class="privacy" role="note"><strong>Privacidad:</strong> esta consulta solo muestra estado y fechas. No devuelve observaciones, correos, nombres, teléfonos ni coordenadas.</div>
+    </article>
+  </main>
+  <footer class="footer"><div class="shell">IncluMe · seguimiento sin exponer información personal</div></footer>
+  <script>
+    (()=>{
+      "use strict";
+      const ENDPOINT="https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status";
+      const form=document.getElementById("status-form"),input=document.getElementById("reference"),status=document.getElementById("status"),result=document.getElementById("result");
+      const formatDate=value=>{if(!value)return"Sin actualización registrada";const date=new Date(value);return Number.isNaN(date.getTime())?"Fecha no disponible":new Intl.DateTimeFormat("es-CL",{dateStyle:"long",timeStyle:"short"}).format(date)};
+      async function consult(event){event?.preventDefault();const reference=input.value.trim().toUpperCase();input.value=reference;if(!form.reportValidity())return;result.hidden=true;status.dataset.state="";status.textContent="Consultando estado…";try{const response=await fetch(`${ENDPOINT}?ref=${encodeURIComponent(reference)}`,{headers:{Accept:"application/json"}});const data=await response.json().catch(()=>({}));if(!response.ok||!data.ok)throw new Error(data.message||"No fue posible consultar el estado.");document.getElementById("result-reference").textContent=data.reference;document.getElementById("result-title").textContent=data.statusLabel;document.getElementById("result-description").textContent=data.description;document.getElementById("received-at").textContent=formatDate(data.receivedAt);document.getElementById("updated-at").textContent=formatDate(data.updatedAt);result.hidden=false;status.textContent="Estado encontrado.";result.scrollIntoView({block:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}catch(error){status.dataset.state="error";status.textContent=error instanceof Error?error.message:"No fue posible consultar el estado.";status.focus()}}
+      form.addEventListener("submit",consult);const initial=new URLSearchParams(location.search).get("ref");if(initial){input.value=initial.toUpperCase();consult()}
+    })();
+  </script>
+</body>
+</html>

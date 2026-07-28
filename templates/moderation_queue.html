@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Centro de moderación — IncluMe{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'moderation.css' %}">{% endblock %}
+{% block content %}
+<div class="moderation-shell">
+  <section class="moderation-hero" aria-labelledby="moderation-title">
+    <div><span class="eyebrow">Equipo IncluMe</span><h1 id="moderation-title">Centro de moderación</h1><p>Revisa aportes, corrige información observable y conserva trazabilidad antes de publicar.</p></div>
+    <div class="moderation-summary" aria-label="Resumen de la cola">
+      <div class="moderation-stat"><strong>{{ counts.pending }}</strong><span>Pendientes</span></div>
+      <div class="moderation-stat"><strong>{{ counts.changes_requested }}</strong><span>Con cambios</span></div>
+      <div class="moderation-stat"><strong>{{ counts.approved }}</strong><span>Aprobados</span></div>
+    </div>
+  </section>
+
+  <form class="moderation-toolbar" method="get">
+    <div class="moderation-search"><label for="moderation-search">Buscar en aportes</label><input id="moderation-search" name="q" type="search" value="{{ query }}" placeholder="Nombre, dirección, acceso o referencia"></div>
+    <input type="hidden" name="status" value="{{ selected_status }}"><button class="button button--primary" type="submit">Buscar</button>
+  </form>
+
+  <nav class="moderation-status-nav" aria-label="Filtrar por estado editorial">
+    <a href="?status=pending&q={{ query|urlencode }}" {% if selected_status == 'pending' %}aria-current="page"{% endif %}>Pendientes <span class="moderation-count">{{ counts.pending }}</span></a>
+    <a href="?status=changes_requested&q={{ query|urlencode }}" {% if selected_status == 'changes_requested' %}aria-current="page"{% endif %}>Correcciones <span class="moderation-count">{{ counts.changes_requested }}</span></a>
+    <a href="?status=approved&q={{ query|urlencode }}" {% if selected_status == 'approved' %}aria-current="page"{% endif %}>Aprobados <span class="moderation-count">{{ counts.approved }}</span></a>
+    <a href="?status=rejected&q={{ query|urlencode }}" {% if selected_status == 'rejected' %}aria-current="page"{% endif %}>Rechazados <span class="moderation-count">{{ counts.rejected }}</span></a>
+    <a href="?status=merged&q={{ query|urlencode }}" {% if selected_status == 'merged' %}aria-current="page"{% endif %}>Fusionados <span class="moderation-count">{{ counts.merged }}</span></a>
+    <a href="?status=all&q={{ query|urlencode }}" {% if selected_status == 'all' %}aria-current="page"{% endif %}>Todos <span class="moderation-count">{{ counts.all }}</span></a>
+  </nav>
+
+  {% if page.object_list %}
+  <ol class="moderation-list" aria-label="Aportes encontrados">
+    {% for item in page.object_list %}
+    <li class="moderation-card moderation-card--{{ item.moderation_status }}">
+      <div>
+        <span class="moderation-badge moderation-badge--{{ item.moderation_status }}">{{ item.get_moderation_status_display }}</span>
+        <h2><a href="{% url 'moderation_detail' item.pk %}">{{ item.name }}</a></h2><p>{{ item.location }}</p>
+        <div class="moderation-card__meta"><span>Aporte #{{ item.pk }}</span><span>{{ item.created_at|date:"d/m/Y H:i" }}</span>{% if item.created_by %}<span>{{ item.created_by.get_username }}</span>{% else %}<span>Anónimo</span>{% endif %}</div>
+      </div>
+      <dl class="moderation-card__facts"><div><dt>Publicación</dt><dd>{% if item.is_published %}Visible{% else %}Oculto{% endif %}</dd></div><div><dt>Confirmaciones</dt><dd>{{ item.verification_count }}</dd></div><div><dt>Incidencias</dt><dd>{{ item.issue_report_count }}</dd></div><div><dt>Coordenadas</dt><dd>{% if item.has_coordinates %}Sí{% else %}Faltan{% endif %}</dd></div></dl>
+      <a class="button button--secondary" href="{% url 'moderation_detail' item.pk %}">Revisar aporte</a>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if page.paginator.num_pages > 1 %}<nav class="moderation-pagination" aria-label="Paginación">{% if page.has_previous %}<a class="button button--secondary" href="?status={{ selected_status }}&q={{ query|urlencode }}&page={{ page.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ page.number }} de {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a class="button button--secondary" href="?status={{ selected_status }}&q={{ query|urlencode }}&page={{ page.next_page_number }}">Siguiente</a>{% endif %}</nav>{% endif %}
+  {% else %}
+  <section class="moderation-empty" aria-live="polite"><h2>No hay aportes en esta vista</h2><p>Cambia el filtro o limpia la búsqueda.</p></section>
+  {% endif %}
+</div>
+{% endblock %}

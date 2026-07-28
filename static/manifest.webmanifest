@@ -1,0 +1,21 @@
+{
+  "name": "IncluMe — Estacionamientos accesibles",
+  "short_name": "IncluMe",
+  "description": "Encuentra, compara y verifica estacionamientos accesibles.",
+  "lang": "es-CL",
+  "start_url": "/parking/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fffaf4",
+  "theme_color": "#075fc4",
+  "categories": ["navigation", "accessibility", "travel"],
+  "icons": [
+    {
+      "src": "/static/images/inclume-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,86 +1,290 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estacionamientos Accesibles</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpCWwg18XxVjYSTwsbHji3vdYHwbRzZ5I&callback=initMap">
-</script>
+{% block title %}Encontrar estacionamiento | IncluMe{% endblock %}
+{% block meta_description %}Encuentra estacionamientos accesibles, filtra según tus necesidades y abre la ubicación exacta en tu aplicación de navegación.{% endblock %}
 
-    <style>
-        #map {
-            height: 80vh; /* Ajusta la altura según lo que necesites */
-            width: 100%;
-            margin: 20px 0;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <header>
-        <nav>
-            <img src="{% static 'images/inclumelogo.png' %}" alt="Logo de IncluMe" class="logo">
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/resources/">Recursos</a></li>
-                <li><a href="/contact/">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="{% static 'parking.css' %}">
+{% endblock %}
 
-    <!-- Contenido principal -->
-    <main>
-        <h1>Encuentra Estacionamientos Accesibles</h1>
-        <p>Selecciona un estacionamiento en el mapa para obtener más información y abrir la ubicación en Waze.</p>
-        
-        <!-- Mapa -->
-        <div id="map"></div>
-    </main>
-
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 IncluMe. Todos los derechos reservados.</p>
-        <div>
-            Síguenos en:
-            <a href="https://facebook.com/IncluMe" target="_blank"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://twitter.com/IncluMe" target="_blank"><i class="fab fa-twitter"></i></a>
-            <a href="https://instagram.com/IncluMe" target="_blank"><i class="fab fa-instagram"></i></a>
+{% block content %}
+<section
+    class="parking-app"
+    id="parking-app"
+    data-api-url="{% url 'parking_data' %}"
+    data-submit-url="{% url 'submit_parking' %}"
+    data-verify-url-template="{% url 'verify_parking' 0 %}"
+    data-tile-url="{{ map_tile_url }}"
+    data-tile-attribution="{{ map_tile_attribution }}"
+>
+    <div class="parking-toolbar section-shell">
+        <div class="parking-toolbar__intro">
+            <span class="eyebrow">IncluMe Estaciona</span>
+            <h1>¿Dónde necesitas estacionar?</h1>
+            <p>Compara condiciones de acceso y abre la coordenada exacta en tu aplicación de navegación.</p>
         </div>
-    </footer>
-    
 
-    <script>
-        function initMap() {
-            // Configuración inicial del mapa
-            const map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: -33.4489, lng: -70.6693 }, // Santiago, Chile
-                zoom: 12,
-            });
-    
-            // Ejemplo de marcador en Santiago
-            const marker = new google.maps.Marker({
-                position: { lat: -33.4489, lng: -70.6693 },
-                map: map,
-                title: "Estacionamiento accesible",
-            });
-    
-            // Evento para abrir Waze al hacer clic en el marcador
-            marker.addListener("click", () => {
-                window.open(
-                    `https://www.waze.com/ul?ll=${marker.getPosition().lat()},${marker.getPosition().lng()}&navigate=yes`,
-                    "_blank"
-                );
-            });
-        }
-    </script>
-    
-</body>
-</html>
+        <div class="parking-search-panel" aria-label="Controles de búsqueda">
+            <label class="field field--search" for="parking-search">
+                <span>Destino o nombre del lugar</span>
+                <input id="parking-search" type="search" autocomplete="off" placeholder="Clínica, comercio o dirección">
+            </label>
+            <div class="parking-search-panel__actions">
+                <button class="button button--primary" id="locate-button" type="button">Usar mi ubicación</button>
+                <button class="button button--secondary" id="preferences-button" type="button">Mis preferencias</button>
+                <button class="button button--secondary" id="contribute-button" type="button">Aportar lugar</button>
+            </div>
+        </div>
+
+        <fieldset class="priority-control">
+            <legend>Prioridad del viaje</legend>
+            <div class="segmented-control">
+                <label><input type="radio" name="priority" value="effort" checked><span>Menor esfuerzo</span></label>
+                <label><input type="radio" name="priority" value="trust"><span>Más verificado</span></label>
+                <label><input type="radio" name="priority" value="distance"><span>Más cercano</span></label>
+            </div>
+        </fieldset>
+
+        <div class="preference-summary" id="preference-summary">
+            <div>
+                <strong>Tu configuración de acceso</strong>
+                <p id="preference-summary-text">Máximo 100 m a la entrada · preferir ruta sin escalones</p>
+            </div>
+            <button class="text-button" id="edit-preferences-button" type="button">Editar</button>
+        </div>
+
+        <p class="parking-status" id="parking-status" role="status" aria-live="polite">Cargando estacionamientos…</p>
+    </div>
+
+    <div class="parking-view-switch section-shell" aria-label="Vista de resultados">
+        <button class="view-switch is-active" type="button" data-view="list" aria-pressed="true">Lista</button>
+        <button class="view-switch" type="button" data-view="map" aria-pressed="false">Mapa</button>
+        <button class="view-switch view-switch--split" type="button" data-view="split" aria-pressed="false">Vista dividida</button>
+    </div>
+
+    <div class="parking-workspace section-shell" data-current-view="split">
+        <section class="parking-results" id="results-panel" aria-labelledby="results-title">
+            <div class="parking-results__header">
+                <div>
+                    <h2 id="results-title">Opciones compatibles</h2>
+                    <p id="results-summary">Buscando información reciente…</p>
+                </div>
+                <span class="status-chip" id="update-chip">Sin actualizar</span>
+            </div>
+            <ol class="parking-list" id="parking-list"></ol>
+            <div class="empty-state" id="parking-empty" hidden>
+                <h3>No encontramos una opción compatible</h3>
+                <p>Amplía la distancia, modifica una preferencia o aporta un lugar para que pueda revisarse.</p>
+                <button class="button button--secondary" type="button" id="empty-preferences-button">Cambiar preferencias</button>
+            </div>
+        </section>
+
+        <section class="parking-map-panel" id="map-panel" aria-label="Mapa de estacionamientos accesibles">
+            <div class="map-context" id="map-context">
+                <strong>Mapa orientativo</strong>
+                <span>La lista contiene la misma información sin depender del mapa.</span>
+            </div>
+            <div id="map" aria-label="Mapa interactivo de estacionamientos accesibles"></div>
+            <noscript>
+                <p class="map-fallback">Activa JavaScript para utilizar el mapa. La información principal también está disponible en la lista.</p>
+            </noscript>
+        </section>
+    </div>
+</section>
+
+<dialog class="inclume-dialog" id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-header">
+        <div>
+            <span class="status-chip" id="detail-status">Información del lugar</span>
+            <h2 id="detail-title">Detalle del estacionamiento</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar detalle">×</button>
+    </div>
+    <div id="detail-content"></div>
+</dialog>
+
+<dialog class="inclume-dialog inclume-dialog--compact" id="navigation-dialog" aria-labelledby="navigation-title">
+    <div class="dialog-header">
+        <div>
+            <span class="status-chip">Abrir coordenada exacta</span>
+            <h2 id="navigation-title">¿Con qué aplicación quieres llegar?</h2>
+            <p id="navigation-place-name"></p>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar navegación">×</button>
+    </div>
+    <div class="navigation-options">
+        <button class="provider-button" type="button" data-provider="system"><strong>Aplicación compatible</strong><span>Permite que tu teléfono elija</span></button>
+        <button class="provider-button" type="button" data-provider="waze"><strong>Waze</strong><span>Abrir ruta vehicular</span></button>
+        <button class="provider-button" type="button" data-provider="google"><strong>Google Maps</strong><span>Abrir indicaciones</span></button>
+        <button class="provider-button" type="button" data-provider="apple"><strong>Apple Maps</strong><span>Disponible en dispositivos Apple</span></button>
+    </div>
+    <label class="checkbox-row"><input id="remember-provider" type="checkbox"> Recordar esta elección en este dispositivo</label>
+</dialog>
+
+<dialog class="inclume-dialog" id="preferences-dialog" aria-labelledby="preferences-title">
+    <form id="preferences-form" method="dialog">
+        <div class="dialog-header">
+            <div>
+                <span class="status-chip">No necesitamos tu diagnóstico</span>
+                <h2 id="preferences-title">Preferencias de acceso</h2>
+                <p>Guarda condiciones funcionales en este dispositivo. Puedes borrarlas cuando quieras.</p>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar preferencias">×</button>
+        </div>
+
+        <div class="form-grid">
+            <label class="field">
+                <span>Máximo hasta la entrada accesible</span>
+                <select name="maxEntranceDistance">
+                    <option value="25">25 metros</option>
+                    <option value="50">50 metros</option>
+                    <option value="100" selected>100 metros</option>
+                    <option value="250">250 metros</option>
+                    <option value="0">Sin límite</option>
+                </select>
+            </label>
+            <label class="field">
+                <span>Lado de transferencia</span>
+                <select name="transferSide">
+                    <option value="any">Cualquier lado</option>
+                    <option value="right">Lado derecho</option>
+                    <option value="left">Lado izquierdo</option>
+                    <option value="both">Necesito ambos lados</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="switch-list">
+            <label class="switch-row"><input type="checkbox" name="stepFreeOnly" checked><span><strong>Ruta sin escalones</strong><small>Excluir lugares que confirman escalones en la ruta.</small></span></label>
+            <label class="switch-row"><input type="checkbox" name="avoidSteepSlope" checked><span><strong>Evitar pendiente pronunciada</strong><small>Reducir esfuerzo y riesgo durante el desplazamiento.</small></span></label>
+            <label class="switch-row"><input type="checkbox" name="largeText"><span><strong>Texto grande</strong><small>Aumentar texto y espacio vertical.</small></span></label>
+            <label class="switch-row"><input type="checkbox" name="highContrast"><span><strong>Alto contraste</strong><small>Reforzar bordes, texto y estados.</small></span></label>
+        </div>
+
+        <div class="dialog-actions">
+            <button class="button button--secondary" id="reset-preferences" type="button">Restablecer</button>
+            <button class="button button--primary" type="submit">Guardar preferencias</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog class="inclume-dialog" id="verify-dialog" aria-labelledby="verify-title">
+    <form id="verify-form">
+        <div class="dialog-header">
+            <div>
+                <span class="status-chip status-chip--success">Verificación rápida</span>
+                <h2 id="verify-title">Ayuda a la siguiente persona</h2>
+                <p id="verify-place-name"></p>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar verificación">×</button>
+        </div>
+
+        <fieldset class="form-section">
+            <legend>¿Pudiste utilizar este estacionamiento?</legend>
+            <div class="choice-grid">
+                <label><input type="radio" name="accessibility_confirmed" value="true" required><span>Sí, pude usarlo</span></label>
+                <label><input type="radio" name="accessibility_confirmed" value="false"><span>No pude usarlo</span></label>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend>¿Continúa disponible?</legend>
+            <div class="choice-grid">
+                <label><input type="radio" name="is_available" value="true" required><span>Sí</span></label>
+                <label><input type="radio" name="is_available" value="false"><span>No</span></label>
+            </div>
+        </fieldset>
+
+        <div class="form-grid form-grid--three">
+            <label class="field"><span>Espacio lateral libre</span><select name="transfer_space_clear"><option value="">No sé</option><option value="true">Sí</option><option value="false">No</option></select></label>
+            <label class="field"><span>Ruta sin escalones</span><select name="step_free_route_clear"><option value="">No sé</option><option value="true">Sí</option><option value="false">No</option></select></label>
+            <label class="field"><span>Señalización visible</span><select name="official_signage_visible"><option value="">No sé</option><option value="true">Sí</option><option value="false">No</option></select></label>
+        </div>
+
+        <label class="field">
+            <span>Problema observado</span>
+            <select name="issue_type">
+                <option value="none">Sin problema</option>
+                <option value="occupied">Espacio ocupado</option>
+                <option value="blocked">Acceso bloqueado</option>
+                <option value="signage">Señalización ausente o dañada</option>
+                <option value="route">Ruta accesible interrumpida</option>
+                <option value="removed">El estacionamiento ya no existe</option>
+                <option value="other">Otro</option>
+            </select>
+        </label>
+        <label class="field">
+            <span>Comentario opcional</span>
+            <textarea name="comment" rows="3" maxlength="800" placeholder="Describe solo lo que observaste, sin datos personales."></textarea>
+        </label>
+        <p class="form-feedback" id="verify-feedback" role="status" aria-live="polite"></p>
+        <div class="dialog-actions">
+            <button class="button button--secondary" type="button" data-close-dialog>Cancelar</button>
+            <button class="button button--primary" type="submit">Enviar verificación</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog class="inclume-dialog" id="contribute-dialog" aria-labelledby="contribute-title">
+    <form id="contribute-form">
+        <div class="dialog-header">
+            <div>
+                <span class="status-chip">Aporte moderado</span>
+                <h2 id="contribute-title">Agregar estacionamiento</h2>
+                <p>El lugar quedará pendiente de revisión antes de publicarse.</p>
+            </div>
+            <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar aporte">×</button>
+        </div>
+
+        <div class="privacy-callout"><strong>No publiques patentes, rostros, credenciales ni diagnósticos.</strong><span>Describe características observables del lugar.</span></div>
+
+        <div class="form-grid">
+            <label class="field"><span>Nombre del lugar</span><input name="name" required maxlength="160" placeholder="Ej.: Hospital, comercio o edificio"></label>
+            <label class="field"><span>Dirección o referencia</span><input name="location" required maxlength="255" placeholder="Ej.: acceso norte, estacionamiento 02"></label>
+        </div>
+
+        <div class="form-grid">
+            <label class="field"><span>Latitud del estacionamiento</span><input name="latitude" type="number" step="0.000001" min="-90" max="90" required></label>
+            <label class="field"><span>Longitud del estacionamiento</span><input name="longitude" type="number" step="0.000001" min="-180" max="180" required></label>
+        </div>
+        <button class="button button--secondary" id="use-location-for-contribution" type="button">Usar mi ubicación para el aporte</button>
+
+        <div class="form-grid form-grid--three">
+            <label class="field"><span>Tipo de lugar</span><select name="place_type" required><option value="street">Vía pública</option><option value="municipal">Municipal</option><option value="business">Comercio</option><option value="healthcare">Clínica u hospital</option><option value="building">Edificio</option><option value="private">Privado</option><option value="other" selected>Otro</option></select></label>
+            <label class="field"><span>Lado de transferencia</span><select name="transfer_side" required><option value="unknown">No sé</option><option value="right">Derecho</option><option value="left">Izquierdo</option><option value="both">Ambos lados</option></select></label>
+            <label class="field"><span>Superficie</span><select name="surface_type" required><option value="unknown">No sé</option><option value="level">Nivelada</option><option value="slight_slope">Pendiente leve</option><option value="steep_slope">Pendiente pronunciada</option><option value="irregular">Irregular</option></select></label>
+        </div>
+
+        <label class="field"><span>Distancia aproximada hasta la entrada accesible</span><input name="distance_to_entrance_m" type="number" min="0" max="5000" placeholder="Metros"></label>
+
+        <fieldset class="form-section">
+            <legend>Características observadas</legend>
+            <div class="observed-grid">
+                <label><input type="checkbox" name="has_official_signage"><span>Señalización oficial</span></label>
+                <label><input type="checkbox" name="has_transfer_space"><span>Espacio de transferencia</span></label>
+                <label><input type="checkbox" name="has_level_surface"><span>Superficie nivelada</span></label>
+                <label><input type="checkbox" name="has_curb_ramp"><span>Rebaje o rampa</span></label>
+                <label><input type="checkbox" name="has_step_free_route"><span>Ruta sin escalones</span></label>
+                <label><input type="checkbox" name="is_well_lit"><span>Buena iluminación</span></label>
+                <label><input type="checkbox" name="is_covered"><span>Protección climática</span></label>
+            </div>
+        </fieldset>
+
+        <label class="field"><span>Cómo ingresar en vehículo</span><textarea name="vehicle_access_notes" rows="2" placeholder="Portón, costado, sentido de la calle u otra referencia."></textarea></label>
+        <label class="field"><span>Ruta hasta la entrada accesible</span><textarea name="accessible_entrance_notes" rows="2" placeholder="Describe el recorrido sin incluir datos personales."></textarea></label>
+        <label class="field"><span>Información adicional</span><textarea name="accessibility_info" rows="2"></textarea></label>
+
+        <p class="form-feedback" id="contribute-feedback" role="status" aria-live="polite"></p>
+        <div class="dialog-actions" id="aportar">
+            <button class="button button--secondary" type="button" data-close-dialog>Cancelar</button>
+            <button class="button button--primary" type="submit">Enviar para revisión</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="{% static 'parking.js' %}" defer></script>
+{% endblock %}

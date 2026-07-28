@@ -1,0 +1,399 @@
+/* IncluMe v4 — vibrant, configurable and accessibility-first visual layer. */
+
+:root {
+    --color-ink: #10243a;
+    --color-muted: #465b70;
+    --color-navy: #123a5a;
+    --color-blue: #075fc4;
+    --color-blue-strong: #004da8;
+    --color-blue-soft: #e8f3ff;
+    --color-turquoise: #007c70;
+    --color-turquoise-soft: #e3f8f3;
+    --color-violet: #6846bd;
+    --color-lavender: #f1ecff;
+    --color-coral: #ad3156;
+    --color-coral-soft: #fff0f4;
+    --color-mint: #e5f8ef;
+    --color-success: #066343;
+    --color-amber: #825000;
+    --color-amber-soft: #fff3d5;
+    --color-danger: #9f2f27;
+    --color-danger-soft: #fff0ed;
+    --color-bg: #fffaf4;
+    --color-surface: #ffffff;
+    --color-border: #bfcfdd;
+    --focus-ring: #f29b2e;
+    --shadow-soft: 0 7px 20px rgba(18, 58, 90, 0.10);
+    --shadow-card: 0 18px 44px rgba(18, 58, 90, 0.14);
+}
+
+html {
+    scroll-padding-top: 6rem;
+}
+
+body {
+    background:
+        radial-gradient(circle at 4% 3%, rgba(104, 70, 189, 0.10), transparent 24rem),
+        radial-gradient(circle at 96% 10%, rgba(0, 124, 112, 0.10), transparent 28rem),
+        linear-gradient(180deg, #fffdf9 0%, var(--color-bg) 42%, #f5fbff 100%);
+    background-attachment: fixed;
+}
+
+body[data-spacing="comfortable"] {
+    line-height: 1.72;
+}
+
+body[data-text-scale="large"] {
+    font-size: 1.125rem;
+}
+
+body[data-text-scale="x-large"] {
+    font-size: 1.25rem;
+}
+
+body[data-high-contrast="true"] {
+    --color-ink: #071522;
+    --color-muted: #1e3449;
+    --color-navy: #071f35;
+    --color-blue: #004fb4;
+    --color-blue-strong: #003d8f;
+    --color-turquoise: #005f55;
+    --color-violet: #52349f;
+    --color-border: #526d85;
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+}
+
+:focus-visible {
+    outline: 4px solid var(--focus-ring);
+    outline-offset: 3px;
+}
+
+.site-header {
+    border-bottom-color: rgba(7, 95, 196, 0.24);
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.site-header::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-blue), var(--color-turquoise), var(--color-violet));
+}
+
+.site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.brand__mark {
+    border-radius: 14px;
+    background: linear-gradient(145deg, var(--color-blue), var(--color-violet) 58%, var(--color-turquoise));
+    box-shadow: 0 10px 24px rgba(7, 95, 196, 0.22);
+}
+
+.button--primary,
+.button--small {
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-blue), var(--color-blue-strong));
+    box-shadow: 0 9px 22px rgba(7, 95, 196, 0.20);
+}
+
+.button--primary:hover,
+.button--small:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #0054b3, #003f8c);
+}
+
+.button--secondary {
+    border-color: #8eb0ce;
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.button--secondary:hover {
+    border-color: var(--color-blue);
+    background: var(--color-blue-soft);
+}
+
+.eyebrow {
+    color: #4e3196;
+    border: 1px solid #d1c3f7;
+    background: var(--color-lavender);
+}
+
+.status-chip {
+    border: 1px solid #b8d5f2;
+    background: var(--color-blue-soft);
+}
+
+.status-chip--success {
+    border-color: #9bd5bf;
+    background: var(--color-mint);
+}
+
+.preference-summary,
+.privacy-callout {
+    border: 1px solid #d4c8f4;
+    background: linear-gradient(135deg, var(--color-lavender), #edf8ff);
+}
+
+.parking-search-panel,
+.parking-results,
+.parking-map-panel,
+.inclume-dialog {
+    box-shadow: var(--shadow-card);
+}
+
+.parking-results {
+    border-top: 5px solid var(--color-blue);
+}
+
+.parking-map-panel {
+    border-top: 5px solid var(--color-turquoise);
+}
+
+.parking-card.is-best {
+    border-color: #5c9ee0;
+    background: linear-gradient(145deg, #ffffff, #f3f8ff);
+}
+
+.plan-b-card {
+    border-color: #e0b34f;
+    background: linear-gradient(145deg, var(--color-amber-soft), #fff9eb);
+}
+
+.feature-chip:nth-child(3n + 1) {
+    background: var(--color-blue-soft);
+}
+
+.feature-chip:nth-child(3n + 2) {
+    background: var(--color-turquoise-soft);
+}
+
+.feature-chip:nth-child(3n + 3) {
+    background: var(--color-lavender);
+}
+
+.accessibility-button {
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #9eb7ce;
+    border-radius: 999px;
+    color: var(--color-navy);
+    background: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.accessibility-button::before {
+    content: "◉";
+    color: var(--color-violet);
+    font-size: 1.05rem;
+}
+
+.accessibility-dialog {
+    width: min(700px, calc(100% - 1rem));
+    max-height: min(90vh, 820px);
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    color: var(--color-ink);
+    background: #fff;
+    box-shadow: 0 34px 90px rgba(10, 36, 60, 0.34);
+    overflow: auto;
+}
+
+.accessibility-dialog::backdrop {
+    background: rgba(6, 25, 43, 0.68);
+    backdrop-filter: blur(5px);
+}
+
+.accessibility-dialog__header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.2rem;
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.97);
+}
+
+.accessibility-dialog__header h2 {
+    margin: 0.35rem 0 0;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-size: clamp(1.55rem, 4vw, 2.1rem);
+}
+
+.accessibility-dialog__header p {
+    margin: 0.4rem 0 0;
+    color: var(--color-muted);
+}
+
+.accessibility-dialog__body {
+    display: grid;
+    gap: 1rem;
+    padding: 1.2rem;
+}
+
+.accessibility-option-group {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.accessibility-option-group legend {
+    padding-inline: 0.35rem;
+    color: var(--color-navy);
+    font-family: var(--font-display);
+    font-weight: 800;
+}
+
+.accessibility-choice {
+    min-height: 52px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.accessibility-choice:has(input:checked) {
+    border-color: var(--color-blue);
+    background: var(--color-blue-soft);
+    box-shadow: inset 4px 0 0 var(--color-blue);
+}
+
+.accessibility-choice input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.1rem;
+    accent-color: var(--color-blue);
+}
+
+.accessibility-choice strong,
+.accessibility-choice small {
+    display: block;
+}
+
+.accessibility-choice strong {
+    color: var(--color-ink);
+    font-family: var(--font-display);
+}
+
+.accessibility-choice small {
+    margin-top: 0.2rem;
+    color: var(--color-muted);
+}
+
+.accessibility-dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    padding-top: 0.4rem;
+}
+
+.accessibility-close {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    color: var(--color-navy);
+    background: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+html[data-reduce-motion="true"] {
+    scroll-behavior: auto;
+}
+
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
+body[data-map-style="vivid"] #map .leaflet-tile-pane,
+body[data-map-style="vivid"] #contribution-geotag-map .leaflet-tile-pane {
+    filter: grayscale(0.14) saturate(0.88) brightness(1.03) contrast(0.98);
+}
+
+body[data-map-style="calm"] #map .leaflet-tile-pane,
+body[data-map-style="calm"] #contribution-geotag-map .leaflet-tile-pane {
+    filter: grayscale(0.64) saturate(0.48) brightness(1.05) contrast(0.94);
+}
+
+@media (prefers-contrast: more) {
+    :root {
+        --color-border: #536f87;
+        --color-muted: #243b51;
+    }
+
+    .button,
+    .accessibility-button,
+    .accessibility-choice {
+        border-width: 2px;
+    }
+}
+
+@media (max-width: 760px) {
+    .site-header__inner {
+        width: min(var(--shell), calc(100% - 1rem));
+    }
+
+    .accessibility-button {
+        min-width: 46px;
+        justify-content: center;
+        padding-inline: 0.75rem;
+    }
+
+    .accessibility-button__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .accessibility-dialog {
+        border-radius: 18px;
+    }
+
+    .accessibility-dialog__actions,
+    .accessibility-dialog__actions .button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .site-header__actions {
+        gap: 0.4rem;
+    }
+}

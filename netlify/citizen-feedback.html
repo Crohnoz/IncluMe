@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#075fc4">
+  <meta name="description" content="Reporta o corrige información observable sobre estacionamientos accesibles en Chile.">
+  <title>Reportar o corregir — IncluMe</title>
+  <link rel="icon" href="../static/images/inclume-app-icon.svg" type="image/svg+xml">
+  <style>
+    :root{--blue:#075fc4;--violet:#6846bd;--teal:#007c70;--ink:#14233b;--muted:#53627a;--line:#c8d7e8;--bg:#f4f8ff;--card:#fff;--warn:#704500}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 90% 0,#dff9f2,transparent 24rem),radial-gradient(circle at 0 5%,#ebe4ff,transparent 22rem),var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}.shell{width:min(760px,calc(100% - 2rem));margin:auto}.skip{position:absolute;left:-9999px}.skip:focus{left:1rem;top:1rem;background:#fff;padding:.8rem;z-index:10}.header{background:rgba(255,255,255,.94);border-bottom:1px solid var(--line)}.header__in{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:1rem}.brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink);font-weight:800;font-size:1.25rem}.brand img{width:48px;height:48px}.brand b{color:var(--violet)}main{padding:clamp(2rem,7vw,4rem) 0}.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:clamp(1.2rem,4vw,2.2rem);box-shadow:0 20px 55px rgba(11,37,80,.1)}h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.05;margin:.35rem 0 1rem}h2{font-size:1.3rem}.eyebrow{font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--violet);font-size:.8rem}.note{background:#fff5d8;border:1px solid #e5c36b;color:var(--warn);border-radius:14px;padding:.9rem 1rem}.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.field{display:grid;gap:.4rem;margin-top:1rem;font-weight:700}.field input,.field select,.field textarea{width:100%;min-height:50px;border:2px solid var(--line);border-radius:12px;padding:.75rem .85rem;font:inherit;background:#fff;color:var(--ink)}.field textarea{min-height:130px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus,.button:focus{outline:4px solid #ffd463;outline-offset:2px;border-color:var(--blue)}.help{font-size:.92rem;color:var(--muted);font-weight:400}.coords{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.3rem}.button{min-height:50px;border-radius:14px;padding:.75rem 1rem;border:2px solid transparent;font:800 1rem system-ui;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.button[disabled]{opacity:.65;cursor:wait}.primary{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff}.secondary{background:#fff;border-color:#9fb5ce;color:#0b2550}.check{display:flex;align-items:flex-start;gap:.7rem;margin-top:1.2rem}.check input{width:22px;height:22px;margin-top:.2rem}.honeypot{position:absolute;left:-9999px}.status,.intake-status{min-height:1.5rem;color:var(--teal);font-weight:700}.intake-status[data-state="error"]{color:#9d2f26}.footer{padding:2rem 0;color:var(--muted)}@media(max-width:620px){.header__in{align-items:flex-start;flex-direction:column;padding-block:.8rem}.grid,.coords{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al formulario</a>
+  <header class="header"><div class="shell header__in"><a class="brand" href="/"><img src="../static/images/inclume-app-icon.svg" alt=""><span>Inclu<b>Me</b></span></a><a class="button secondary" href="/">Volver al mapa</a></div></header>
+  <main id="main" class="shell">
+    <article class="card">
+      <span class="eyebrow">Participación ciudadana</span>
+      <h1>Reporta o corrige un punto accesible.</h1>
+      <p>Describe condiciones observables del lugar. El reporte será revisado antes de incorporarse al catálogo público.</p>
+      <div class="note" role="note"><strong>No envíes diagnósticos, credenciales, patentes, rostros ni acusaciones personales.</strong> El correo es opcional y se usa solo para aclarar el reporte.</div>
+
+      <form name="reporte-ciudadano" method="POST" action="/gracias/" data-netlify="true" netlify-honeypot="bot-field" data-intake-kind="citizen_report">
+        <input type="hidden" name="form-name" value="reporte-ciudadano">
+        <p class="honeypot"><label>No completes este campo: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+
+        <div class="grid">
+          <label class="field"><span>Tipo de reporte</span><select name="tipo" required><option value="">Selecciona</option><option>Nuevo estacionamiento</option><option>Información incorrecta</option><option>Acceso bloqueado</option><option>Señalización ausente</option><option>Ruta con barrera</option><option>Otro cambio observable</option></select></label>
+          <label class="field"><span>Comuna</span><input name="comuna" maxlength="80" required autocomplete="address-level2"></label>
+        </div>
+        <label class="field"><span>Lugar o destino</span><input name="lugar" maxlength="140" required placeholder="Ej.: hospital, municipalidad o centro comercial"></label>
+        <label class="field"><span>Referencia exacta</span><input name="referencia" maxlength="220" required placeholder="Ej.: acceso norte, segundo espacio junto a la rampa"></label>
+
+        <section aria-labelledby="coord-title">
+          <h2 id="coord-title">Ubicación opcional</h2>
+          <p class="help">Puedes escribir coordenadas o permitir que el navegador use tu ubicación una sola vez.</p>
+          <div class="coords">
+            <label class="field"><span>Latitud</span><input id="latitude" name="latitud" type="number" step="0.000001" min="-58" max="-15"></label>
+            <label class="field"><span>Longitud</span><input id="longitude" name="longitud" type="number" step="0.000001" min="-112" max="-64"></label>
+          </div>
+          <div class="actions"><button class="button secondary" id="locate" type="button">Usar mi ubicación</button></div>
+          <p class="status" id="location-status" role="status" aria-live="polite"></p>
+        </section>
+
+        <label class="field"><span>¿Qué observaste?</span><textarea name="observacion" minlength="10" maxlength="1200" required placeholder="Describe superficie, pendiente, espacio lateral, rebaje, ruta o señalización."></textarea></label>
+        <label class="field"><span>Correo de contacto (opcional)</span><input name="email" type="email" maxlength="180" autocomplete="email"><small class="help">No se publicará en el mapa.</small></label>
+        <label class="check"><input name="declaracion" type="checkbox" required value="confirmado"><span>Confirmo que describí una observación de buena fe y sin incluir datos personales de terceros.</span></label>
+        <p class="intake-status" data-intake-status role="status" aria-live="polite" tabindex="-1"></p>
+        <div class="actions"><button class="button primary" type="submit">Enviar a revisión</button><a class="button secondary" href="/">Cancelar</a></div>
+      </form>
+    </article>
+  </main>
+  <footer class="footer"><div class="shell">IncluMe · información comunitaria revisable</div></footer>
+  <script>
+    (()=>{"use strict";const button=document.getElementById("locate"),status=document.getElementById("location-status"),lat=document.getElementById("latitude"),lng=document.getElementById("longitude");button.addEventListener("click",()=>{if(!navigator.geolocation){status.textContent="Este navegador no permite obtener ubicación. Puedes escribir las coordenadas.";return}button.disabled=true;status.textContent="Solicitando ubicación…";navigator.geolocation.getCurrentPosition(position=>{lat.value=position.coords.latitude.toFixed(6);lng.value=position.coords.longitude.toFixed(6);status.textContent="Ubicación agregada. Puedes ajustar las coordenadas antes de enviar.";button.disabled=false},()=>{status.textContent="No fue posible obtener la ubicación. Puedes continuar sin ella.";button.disabled=false},{enableHighAccuracy:true,timeout:10000,maximumAge:60000})})})();
+  </script>
+  <script src="/intake-client.js"></script>
+</body>
+</html>

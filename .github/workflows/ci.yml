@@ -1,0 +1,304 @@
+name: IncluMe CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+      - netlify-ciudadania
+      - netlify-municipalidades
+      - recovery/render-b793a8f
+      - feature/parking-community-mvp
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DEBUG: "true"
+      SECRET_KEY: ci-only-secret-key
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      CSRF_TRUSTED_ORIGINS: http://localhost
+      SUPABASE_FUNCTIONS_URL: https://azdrxkabzldwcmotzaor.supabase.co/functions/v1
+      PUBLIC_ORIGIN: https://inclume-chile.netlify.app
+      ADMIN_ORIGIN: https://inclume-municipalidades.netlify.app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python dependencies
+        run: pip install -q -r requirements.txt
+
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-audit --no-fund --silent
+          npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
+
+      - name: Check Python syntax
+        run: python -m compileall -q .
+
+      - name: Check migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Django system check
+        run: python manage.py check
+
+      - name: Run Django tests
+        id: django_tests
+        shell: bash
+        run: |
+          set +e
+          python manage.py test --verbosity 2 2>&1 | tee /tmp/django-tests.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Upload Django failure log
+        if: failure() && steps.django_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: django-test-log
+          path: /tmp/django-tests.log
+          retention-days: 3
+
+      - name: Check JavaScript syntax
+        if: success()
+        run: |
+          node --check static/parking.js
+          node --check static/parking-resilience.js
+          node --check static/parking-geotag-v4.js
+          node --check static/destination-search.js
+          node --check static/accessibility-controls.js
+          node --check static/motion.js
+          node --check static/service-worker.js
+          node --check preview-v2/a11y-bootstrap.js
+          node --check preview-v2/app-v4.js
+          node --check netlify/intake-client.js
+          node --check netlify/admin-client.js
+
+      - name: Validate interactive previews
+        if: success()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          legacy = Path("preview/index.html").read_text(encoding="utf-8")
+          assert legacy.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in legacy
+          assert 'id="main"' in legacy
+          scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", legacy, re.DOTALL | re.IGNORECASE)
+          inline = "\n".join(script for script in scripts if script.strip())
+          assert inline.strip(), "La preview original debe contener interacción JavaScript."
+          Path("/tmp/inclume-preview.js").write_text(inline, encoding="utf-8")
+
+          current = Path("preview-v2/index.html").read_text(encoding="utf-8")
+          assert current.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in current
+          assert 'id="map"' in current
+          assert 'id="pin-mode"' in current
+          assert 'id="accessibility-dialog"' in current
+          assert 'a11y-bootstrap.js' in current
+          assert 'app-v4.js' in current
+          assert 'inclusive.css' in current
+
+          functional = Path("templates/destination_search.html").read_text(encoding="utf-8")
+          assert 'name="q"' in functional
+          assert 'autocomplete="off"' in functional
+          assert 'id="destination-map"' in functional
+          assert 'Abrir Waze' in functional
+          assert 'No ingreses domicilios particulares' in functional
+
+          municipal = Path("preview-v2/municipalidades.html").read_text(encoding="utf-8")
+          assert municipal.lstrip().lower().startswith("<!doctype html>")
+          assert 'lang="es-CL"' in municipal
+          assert 'id="metrics"' in municipal
+          assert 'id="export"' in municipal
+          assert "todos los lugares de esta página son ficticios" in municipal
+          municipal_scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", municipal, re.DOTALL | re.IGNORECASE)
+          municipal_inline = "\n".join(script for script in municipal_scripts if script.strip())
+          assert municipal_inline.strip(), "La demo municipal debe contener interacción JavaScript."
+          Path("/tmp/inclume-municipal-preview.js").write_text(municipal_inline, encoding="utf-8")
+
+          production_logo_css = Path("static/logo-v5.css").read_text(encoding="utf-8")
+          preview_logo_css = Path("preview-v2/static/logo-v5.css").read_text(encoding="utf-8")
+          production_logo_svg = Path("static/images/inclume-app-icon.svg").read_text(encoding="utf-8")
+          preview_logo_svg = Path("preview-v2/static/images/inclume-app-icon.svg").read_text(encoding="utf-8")
+          assert production_logo_css == preview_logo_css, "La preview debe usar los mismos estilos de marca."
+          assert production_logo_svg == preview_logo_svg, "La preview debe usar el mismo logo SVG."
+          assert "silla de ruedas" in production_logo_svg
+          PY
+          node --check /tmp/inclume-preview.js
+          node --check /tmp/inclume-municipal-preview.js
+
+      - name: Validate isolated Netlify builds
+        if: success()
+        run: |
+          python scripts/build_netlify_citizen.py
+          python scripts/build_netlify_municipal.py
+          node --check netlify-ciudadania-dist/app-v4.js
+          node --check netlify-ciudadania-dist/intake-client.js
+          node --check netlify-municipal-dist/intake-client.js
+          node --check netlify-municipal-dist/admin-client.js
+          python - <<'PY'
+          from pathlib import Path
+
+          intake_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-intake"
+          catalog_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-catalog"
+          status_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
+          metrics_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-metrics"
+          admin_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-admin"
+          intake_client = Path("netlify/intake-client.js").read_text(encoding="utf-8")
+          assert intake_endpoint in intake_client
+          assert 'payload.kind = form.dataset.intakeKind' in intake_client
+          assert 'Enviar por canal alternativo' in intake_client
+
+          citizen = Path("netlify-ciudadania-dist")
+          municipal = Path("netlify-municipal-dist")
+          assert (citizen / "index.html").exists()
+          assert (citizen / "feedback" / "index.html").exists()
+          assert (citizen / "gracias" / "index.html").exists()
+          assert (citizen / "estado" / "index.html").exists()
+          assert (citizen / "intake-client.js").exists()
+          assert not (citizen / "municipalidades.html").exists()
+          citizen_html = (citizen / "index.html").read_text(encoding="utf-8")
+          citizen_js = (citizen / "app-v4.js").read_text(encoding="utf-8")
+          citizen_status = (citizen / "estado" / "index.html").read_text(encoding="utf-8")
+          assert 'name="commune"' in citizen_html
+          assert catalog_endpoint in citizen_js
+          assert intake_endpoint in citizen_js
+          assert "loadRemoteCatalog" in citizen_js
+          assert "submitPointReport" in citizen_js
+          assert 'data.get("commune")' in citizen_js
+          assert 'point.publicReference' in citizen_js
+          assert status_endpoint in citizen_status
+          assert 'id="status-form"' in citizen_status
+
+          citizen_form = (citizen / "feedback" / "index.html").read_text(encoding="utf-8")
+          assert 'name="reporte-ciudadano"' in citizen_form
+          assert 'netlify-honeypot="bot-field"' in citizen_form
+          assert 'data-intake-kind="citizen_report"' in citizen_form
+          assert 'data-intake-status' in citizen_form
+          assert '/intake-client.js' in citizen_form
+
+          assert (municipal / "index.html").exists()
+          assert (municipal / "gracias" / "index.html").exists()
+          assert (municipal / "estado" / "index.html").exists()
+          assert (municipal / "equipo" / "index.html").exists()
+          assert (municipal / "intake-client.js").exists()
+          assert (municipal / "admin-client.js").exists()
+          municipal_html = (municipal / "index.html").read_text(encoding="utf-8")
+          municipal_status = (municipal / "estado" / "index.html").read_text(encoding="utf-8")
+          admin_html = (municipal / "equipo" / "index.html").read_text(encoding="utf-8")
+          admin_js = (municipal / "admin-client.js").read_text(encoding="utf-8")
+          assert 'name="solicitud-piloto-municipal"' in municipal_html
+          assert 'id="solicitar-piloto"' in municipal_html
+          assert 'netlify-honeypot="bot-field"' in municipal_html
+          assert 'data-intake-kind="municipal_request"' in municipal_html
+          assert 'data-intake-status' in municipal_html
+          assert '/intake-client.js' in municipal_html
+          assert 'id="real-metrics"' in municipal_html
+          assert metrics_endpoint in municipal_html
+          assert status_endpoint in municipal_status
+          assert 'id="status-form"' in municipal_status
+          assert 'name="robots" content="noindex,nofollow,noarchive"' in admin_html
+          assert 'id="login-form"' in admin_html
+          assert 'id="panel-citizen"' in admin_html
+          assert '/admin-client.js' in admin_html
+          assert admin_endpoint in admin_js
+          assert 'sessionStorage' in admin_js
+          assert 'action: "publish_report"' in admin_js
+          assert 'action: "parking_status"' in admin_js
+          PY
+
+      - name: Smoke test deployed Supabase APIs
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Accept: application/json" \
+            -D /tmp/catalog-headers.txt \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-catalog" \
+            -o /tmp/catalog.json
+          jq -e '.ok == true and (.points | type == "array")' /tmp/catalog.json
+          grep -qi "access-control-allow-origin: ${PUBLIC_ORIGIN}" /tmp/catalog-headers.txt
+
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Accept: application/json" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-metrics" \
+            -o /tmp/metrics.json
+          jq -e '.ok == true and (.metrics.publishedLocations | type == "number") and (.metrics.citizenReportsReceived | type == "number")' /tmp/metrics.json
+
+          status_code=$(curl --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Accept: application/json" \
+            -o /tmp/status.json \
+            -w "%{http_code}" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-status?ref=CIU-000000000000")
+          test "$status_code" = "404"
+          jq -e '.ok == false and (.message | type == "string")' /tmp/status.json
+          ! jq -e 'has("observation") or has("email") or has("coordinates")' /tmp/status.json
+
+          intake_code=$(curl --silent --show-error --retry 3 --retry-delay 2 \
+            -X POST \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Content-Type: application/json" \
+            -d '{"kind":"citizen_report","bot-field":"automated-smoke-test"}' \
+            -o /tmp/intake.json \
+            -w "%{http_code}" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-intake")
+          test "$intake_code" = "202"
+          jq -e '.ok == true and .reference == "RECIBIDO"' /tmp/intake.json
+
+          admin_code=$(curl --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${ADMIN_ORIGIN}" \
+            -H "Accept: application/json" \
+            -o /tmp/admin.json \
+            -w "%{http_code}" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-admin?resource=session")
+          test "$admin_code" = "401"
+          jq -e '.ok == false and .message == "Clave administrativa no válida."' /tmp/admin.json
+
+      - name: Run browser and automated accessibility tests
+        id: browser_tests
+        if: success()
+        shell: bash
+        run: |
+          set +e
+          npm run test:browser 2>&1 | tee /tmp/browser-tests.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Upload browser failure log
+        if: failure() && steps.browser_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-log
+          path: |
+            /tmp/browser-tests.log
+            test-results/
+          retention-days: 3
+
+      - name: Validate web manifest JSON
+        if: success()
+        run: python -m json.tool static/manifest.webmanifest > /dev/null
