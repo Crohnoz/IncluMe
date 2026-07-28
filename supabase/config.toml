@@ -1,0 +1,13 @@
+project_id = "azdrxkabzldwcmotzaor"
+
+[functions.inclume-intake]
+verify_jwt = false
+
+[functions.inclume-catalog]
+verify_jwt = false
+
+[functions.inclume-status]
+verify_jwt = false
+
+[functions.inclume-metrics]
+verify_jwt = false
