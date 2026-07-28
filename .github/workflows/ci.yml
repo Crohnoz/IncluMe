@@ -85,6 +85,7 @@ jobs:
           node --check static/service-worker.js
           node --check preview-v2/a11y-bootstrap.js
           node --check preview-v2/app-v4.js
+          node --check netlify/intake-client.js
 
       - name: Validate interactive previews
         if: success()
@@ -149,22 +150,36 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
+          endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-intake"
+          intake_client = Path("netlify/intake-client.js").read_text(encoding="utf-8")
+          assert endpoint in intake_client
+          assert 'payload.kind = form.dataset.intakeKind' in intake_client
+          assert 'Enviar por canal alternativo' in intake_client
+
           citizen = Path("netlify-ciudadania-dist")
           municipal = Path("netlify-municipal-dist")
           assert (citizen / "index.html").exists()
           assert (citizen / "feedback" / "index.html").exists()
           assert (citizen / "gracias" / "index.html").exists()
+          assert (citizen / "intake-client.js").exists()
           assert not (citizen / "municipalidades.html").exists()
           citizen_form = (citizen / "feedback" / "index.html").read_text(encoding="utf-8")
           assert 'name="reporte-ciudadano"' in citizen_form
           assert 'netlify-honeypot="bot-field"' in citizen_form
+          assert 'data-intake-kind="citizen_report"' in citizen_form
+          assert 'data-intake-status' in citizen_form
+          assert '/intake-client.js' in citizen_form
 
           assert (municipal / "index.html").exists()
           assert (municipal / "gracias" / "index.html").exists()
+          assert (municipal / "intake-client.js").exists()
           municipal_html = (municipal / "index.html").read_text(encoding="utf-8")
           assert 'name="solicitud-piloto-municipal"' in municipal_html
           assert 'id="solicitar-piloto"' in municipal_html
           assert 'netlify-honeypot="bot-field"' in municipal_html
+          assert 'data-intake-kind="municipal_request"' in municipal_html
+          assert 'data-intake-status' in municipal_html
+          assert '/intake-client.js' in municipal_html
           PY
 
       - name: Run browser and automated accessibility tests
