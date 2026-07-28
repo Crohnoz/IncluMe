@@ -9,7 +9,7 @@ services:
       python manage.py collectstatic --noinput &&
       python manage.py migrate &&
       python manage.py createcachetable inclume_cache &&
-      python manage.py bootstrap_admin --require
+      python manage.py bootstrap_admin
     startCommand: gunicorn --workers 2 --threads 2 --timeout 60 --access-logfile - --error-logfile - IncluMe.wsgi:application
     healthCheckPath: /health/
     envVars:
