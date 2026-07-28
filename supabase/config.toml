@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.inclume-metrics]
 verify_jwt = false
+
+[functions.inclume-admin]
+verify_jwt = false
