@@ -8,6 +8,7 @@ SOURCE = ROOT / "preview-v2"
 DESTINATION = ROOT / "netlify-ciudadania-dist"
 CATALOG_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-catalog"
 INTAKE_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-intake"
+STATUS_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
 
 
 def replace_once(content: str, old: str, new: str, label: str) -> str:
@@ -233,6 +234,21 @@ def patch_public_javascript() -> None:
     script_path.write_text(script, encoding="utf-8")
 
 
+def copy_shared_pages() -> None:
+    feedback_dir = DESTINATION / "feedback"
+    feedback_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "netlify" / "citizen-feedback.html", feedback_dir / "index.html")
+    shutil.copy2(ROOT / "netlify" / "intake-client.js", DESTINATION / "intake-client.js")
+
+    thanks_dir = DESTINATION / "gracias"
+    thanks_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "netlify" / "thanks-citizen.html", thanks_dir / "index.html")
+
+    status_dir = DESTINATION / "estado"
+    status_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "netlify" / "submission-status.html", status_dir / "index.html")
+
+
 def build() -> None:
     if DESTINATION.exists():
         shutil.rmtree(DESTINATION)
@@ -244,17 +260,9 @@ def build() -> None:
 
     patch_public_html()
     patch_public_javascript()
+    copy_shared_pages()
 
-    feedback_dir = DESTINATION / "feedback"
-    feedback_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "netlify" / "citizen-feedback.html", feedback_dir / "index.html")
-    shutil.copy2(ROOT / "netlify" / "intake-client.js", DESTINATION / "intake-client.js")
-
-    thanks_dir = DESTINATION / "gracias"
-    thanks_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "netlify" / "thanks-citizen.html", thanks_dir / "index.html")
-
-    feedback = (feedback_dir / "index.html").read_text(encoding="utf-8")
+    feedback = (DESTINATION / "feedback" / "index.html").read_text(encoding="utf-8")
     assert 'data-netlify="true"' in feedback
     assert 'netlify-honeypot="bot-field"' in feedback
     assert 'name="form-name" value="reporte-ciudadano"' in feedback
@@ -264,12 +272,15 @@ def build() -> None:
 
     public_html = (DESTINATION / "index.html").read_text(encoding="utf-8")
     public_js = (DESTINATION / "app-v4.js").read_text(encoding="utf-8")
+    status_html = (DESTINATION / "estado" / "index.html").read_text(encoding="utf-8")
     assert 'name="commune"' in public_html
     assert CATALOG_ENDPOINT in public_js
     assert INTAKE_ENDPOINT in public_js
     assert "loadRemoteCatalog" in public_js
     assert "submitPointReport" in public_js
     assert 'data.get("commune")' in public_js
+    assert STATUS_ENDPOINT in status_html
+    assert 'id="status-form"' in status_html
 
 
 if __name__ == "__main__":
