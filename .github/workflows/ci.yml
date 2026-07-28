@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - staging
+      - netlify-ciudadania
+      - netlify-municipalidades
       - recovery/render-b793a8f
       - feature/parking-community-mvp
 
@@ -138,6 +140,32 @@ jobs:
           PY
           node --check /tmp/inclume-preview.js
           node --check /tmp/inclume-municipal-preview.js
+
+      - name: Validate isolated Netlify builds
+        if: success()
+        run: |
+          python scripts/build_netlify_citizen.py
+          python scripts/build_netlify_municipal.py
+          python - <<'PY'
+          from pathlib import Path
+
+          citizen = Path("netlify-ciudadania-dist")
+          municipal = Path("netlify-municipal-dist")
+          assert (citizen / "index.html").exists()
+          assert (citizen / "feedback" / "index.html").exists()
+          assert (citizen / "gracias" / "index.html").exists()
+          assert not (citizen / "municipalidades.html").exists()
+          citizen_form = (citizen / "feedback" / "index.html").read_text(encoding="utf-8")
+          assert 'name="reporte-ciudadano"' in citizen_form
+          assert 'netlify-honeypot="bot-field"' in citizen_form
+
+          assert (municipal / "index.html").exists()
+          assert (municipal / "gracias" / "index.html").exists()
+          municipal_html = (municipal / "index.html").read_text(encoding="utf-8")
+          assert 'name="solicitud-piloto-municipal"' in municipal_html
+          assert 'id="solicitar-piloto"' in municipal_html
+          assert 'netlify-honeypot="bot-field"' in municipal_html
+          PY
 
       - name: Run browser and automated accessibility tests
         id: browser_tests
