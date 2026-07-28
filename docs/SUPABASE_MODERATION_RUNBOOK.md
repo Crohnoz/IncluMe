@@ -8,8 +8,9 @@ Este procedimiento permite operar el piloto antes de disponer de una interfaz ad
 - No publicar diagnósticos, credenciales, patentes, rostros ni acusaciones.
 - No aprobar un lugar sin coordenadas comprobables.
 - Registrar una nota breve y objetiva en cada decisión.
-- Usar un `actor_label` reconocible, por ejemplo `enrique` o `equipo_temuko_01`.
+- Usar un `actor_label` reconocible, por ejemplo `enrique` o `equipo_temuco_01`.
 - La disponibilidad es comunitaria y no una garantía en tiempo real.
+- No modificar directamente estados editoriales ni `is_published`.
 
 ## 1. Revisar la cola ciudadana
 
@@ -147,18 +148,41 @@ limit 100;
 
 El historial no debe editarse manualmente.
 
-## 7. Retirar temporalmente un lugar
+## 7. Retirar o volver a publicar un lugar
 
-Mientras exista solamente operación desde Studio:
+Primero ubicar el identificador canónico:
 
 ```sql
-update public.parking_locations
-set is_published = false,
-    moderation_status = 'archived'
-where id = '<uuid-del-lugar>';
+select id, name, commune, moderation_status, is_published
+from public.parking_locations
+order by updated_at desc;
 ```
 
-Después, registrar el evento manualmente o implementar una función específica antes de usar esta operación de forma habitual. La interfaz administrativa futura deberá convertir este paso en una acción auditada.
+Retirar un lugar del catálogo:
+
+```sql
+select public.moderate_parking_location(
+  '<uuid-del-lugar>',
+  'archived',
+  false,
+  'Retirado temporalmente por obra o cambio de acceso.',
+  'enrique'
+);
+```
+
+Volver a publicar un lugar aprobado:
+
+```sql
+select public.moderate_parking_location(
+  '<uuid-del-lugar>',
+  'approved',
+  true,
+  'Ubicación y condiciones verificadas nuevamente.',
+  'enrique'
+);
+```
+
+La función rechaza combinaciones inconsistentes: un registro `pending`, `rejected` o `archived` no puede mantenerse publicado. Toda acción crea un evento de auditoría.
 
 ## 8. Métricas del piloto
 
@@ -174,8 +198,8 @@ La misma función alimenta el portal municipal y solo entrega cifras agregadas.
 - Estado: `https://inclume-chile.netlify.app/estado/`
 - Portal municipal: `https://inclume-municipalidades.netlify.app`
 
-Después de cambiar un estado, consultar la referencia en `/estado/`. Después de aprobar un lugar, recargar el mapa ciudadano; la API del catálogo usa caché breve, por lo que la actualización puede tardar alrededor de un minuto.
+Después de cambiar un estado, consultar la referencia en `/estado/`. Después de aprobar o retirar un lugar, recargar el mapa ciudadano; la API del catálogo usa caché breve, por lo que la actualización puede tardar alrededor de un minuto.
 
 ## Pendiente operativo
 
-Este runbook es una solución de piloto. El siguiente paso es una interfaz administrativa autenticada que use las mismas funciones SQL, conserve el historial y evite modificaciones directas de tablas.
+Este runbook es una solución de piloto. El siguiente paso es una interfaz administrativa autenticada que use las mismas funciones SQL, conserve el historial y no permita modificaciones directas de tablas.
