@@ -25,6 +25,7 @@ jobs:
       CSRF_TRUSTED_ORIGINS: http://localhost
       SUPABASE_FUNCTIONS_URL: https://azdrxkabzldwcmotzaor.supabase.co/functions/v1
       PUBLIC_ORIGIN: https://inclume-chile.netlify.app
+      ADMIN_ORIGIN: https://inclume-municipalidades.netlify.app
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,6 +89,7 @@ jobs:
           node --check preview-v2/a11y-bootstrap.js
           node --check preview-v2/app-v4.js
           node --check netlify/intake-client.js
+          node --check netlify/admin-client.js
 
       - name: Validate interactive previews
         if: success()
@@ -152,6 +154,7 @@ jobs:
           node --check netlify-ciudadania-dist/app-v4.js
           node --check netlify-ciudadania-dist/intake-client.js
           node --check netlify-municipal-dist/intake-client.js
+          node --check netlify-municipal-dist/admin-client.js
           python - <<'PY'
           from pathlib import Path
 
@@ -159,6 +162,7 @@ jobs:
           catalog_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-catalog"
           status_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
           metrics_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-metrics"
+          admin_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-admin"
           intake_client = Path("netlify/intake-client.js").read_text(encoding="utf-8")
           assert intake_endpoint in intake_client
           assert 'payload.kind = form.dataset.intakeKind' in intake_client
@@ -195,9 +199,13 @@ jobs:
           assert (municipal / "index.html").exists()
           assert (municipal / "gracias" / "index.html").exists()
           assert (municipal / "estado" / "index.html").exists()
+          assert (municipal / "equipo" / "index.html").exists()
           assert (municipal / "intake-client.js").exists()
+          assert (municipal / "admin-client.js").exists()
           municipal_html = (municipal / "index.html").read_text(encoding="utf-8")
           municipal_status = (municipal / "estado" / "index.html").read_text(encoding="utf-8")
+          admin_html = (municipal / "equipo" / "index.html").read_text(encoding="utf-8")
+          admin_js = (municipal / "admin-client.js").read_text(encoding="utf-8")
           assert 'name="solicitud-piloto-municipal"' in municipal_html
           assert 'id="solicitar-piloto"' in municipal_html
           assert 'netlify-honeypot="bot-field"' in municipal_html
@@ -208,6 +216,14 @@ jobs:
           assert metrics_endpoint in municipal_html
           assert status_endpoint in municipal_status
           assert 'id="status-form"' in municipal_status
+          assert 'name="robots" content="noindex,nofollow,noarchive"' in admin_html
+          assert 'id="login-form"' in admin_html
+          assert 'id="panel-citizen"' in admin_html
+          assert '/admin-client.js' in admin_html
+          assert admin_endpoint in admin_js
+          assert 'sessionStorage' in admin_js
+          assert 'action: "publish_report"' in admin_js
+          assert 'action: "parking_status"' in admin_js
           PY
 
       - name: Smoke test deployed Supabase APIs
@@ -252,6 +268,15 @@ jobs:
             "${SUPABASE_FUNCTIONS_URL}/inclume-intake")
           test "$intake_code" = "202"
           jq -e '.ok == true and .reference == "RECIBIDO"' /tmp/intake.json
+
+          admin_code=$(curl --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${ADMIN_ORIGIN}" \
+            -H "Accept: application/json" \
+            -o /tmp/admin.json \
+            -w "%{http_code}" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-admin?resource=session")
+          test "$admin_code" = "401"
+          jq -e '.ok == false and .message == "Clave administrativa no válida."' /tmp/admin.json
 
       - name: Run browser and automated accessibility tests
         id: browser_tests
