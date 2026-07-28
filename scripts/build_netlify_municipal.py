@@ -6,11 +6,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / "netlify-municipal-dist"
 STATUS_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
+METRICS_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-metrics"
 
 FORM_STYLES = """
 <style>
-.pilot-request{background:linear-gradient(135deg,#eef7ff,#fbf8ff 52%,#effcf8)}.pilot-card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:clamp(1.2rem,4vw,2rem);box-shadow:0 20px 55px rgba(11,37,80,.1)}.pilot-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.pilot-card textarea{width:100%;min-height:130px;border:2px solid #b8c9de;border-radius:12px;padding:.7rem .8rem;font:inherit;background:#fff;resize:vertical}.pilot-card input,.pilot-card select{width:100%;min-height:48px;border:2px solid #b8c9de;border-radius:12px;padding:.65rem .8rem;font:inherit;background:#fff}.pilot-card input:focus,.pilot-card select:focus,.pilot-card textarea:focus{outline:4px solid #ffd463;outline-offset:2px;border-color:var(--blue)}.pilot-check{display:flex;align-items:flex-start;gap:.7rem;margin-top:1rem}.pilot-check input{width:22px;height:22px;min-height:22px}.pilot-note{background:#fff5dc;border:1px solid #edca79;color:#633b00;padding:.9rem 1rem;border-radius:14px}.honeypot{position:absolute;left:-9999px}.intake-status{min-height:1.5rem;color:var(--teal);font-weight:700}.intake-status[data-state="error"]{color:#9d2f26}.pilot-card button[disabled]{opacity:.65;cursor:wait}@media(max-width:680px){.pilot-grid{grid-template-columns:1fr}}
+.pilot-request{background:linear-gradient(135deg,#eef7ff,#fbf8ff 52%,#effcf8)}.pilot-card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:clamp(1.2rem,4vw,2rem);box-shadow:0 20px 55px rgba(11,37,80,.1)}.pilot-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.pilot-card textarea{width:100%;min-height:130px;border:2px solid #b8c9de;border-radius:12px;padding:.7rem .8rem;font:inherit;background:#fff;resize:vertical}.pilot-card input,.pilot-card select{width:100%;min-height:48px;border:2px solid #b8c9de;border-radius:12px;padding:.65rem .8rem;font:inherit;background:#fff}.pilot-card input:focus,.pilot-card select:focus,.pilot-card textarea:focus{outline:4px solid #ffd463;outline-offset:2px;border-color:var(--blue)}.pilot-check{display:flex;align-items:flex-start;gap:.7rem;margin-top:1rem}.pilot-check input{width:22px;height:22px;min-height:22px}.pilot-note{background:#fff5dc;border:1px solid #edca79;color:#633b00;padding:.9rem 1rem;border-radius:14px}.honeypot{position:absolute;left:-9999px}.intake-status{min-height:1.5rem;color:var(--teal);font-weight:700}.intake-status[data-state="error"]{color:#9d2f26}.pilot-card button[disabled]{opacity:.65;cursor:wait}.live-activity{position:relative}.live-activity::before{content:"";position:absolute;inset:1.4rem 0 auto;height:7px;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--teal),var(--violet))}.live-card{margin-top:1.2rem;padding:1.2rem;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,#fff,#f4f9ff);box-shadow:0 18px 48px rgba(11,37,80,.08)}.live-status{min-height:1.5rem;margin:.8rem 0 0;color:var(--teal);font-weight:700}.live-status[data-state="error"]{color:#9d2f26}.real-metrics .metric strong{color:var(--teal)}.freshness{color:var(--muted)}@media(max-width:680px){.pilot-grid{grid-template-columns:1fr}}
 </style>
+"""
+
+LIVE_SECTION = """
+<section class="section shell live-activity" aria-labelledby="live-title"><div class="section-head"><div><span class="eyebrow">Actividad real del piloto</span><h2 id="live-title">Indicadores agregados y persistentes.</h2></div><p class="freshness" id="live-updated">Consultando la base del piloto…</p></div><div class="live-card"><p>Estas cifras provienen de Supabase y no incluyen nombres, correos, teléfonos, observaciones ni coordenadas.</p><div class="metrics real-metrics" id="real-metrics" aria-live="polite"><article class="metric"><strong>—</strong><span>Cargando actividad real</span></article></div><p class="live-status" id="real-metrics-status" role="status" aria-live="polite"></p></div></section>
+"""
+
+LIVE_SCRIPT = f"""
+<script>
+(()=>{{
+  "use strict";
+  const ENDPOINT="{METRICS_ENDPOINT}";
+  const container=document.getElementById("real-metrics"),status=document.getElementById("real-metrics-status"),updated=document.getElementById("live-updated");
+  const metric=(value,label)=>{{const article=document.createElement("article");article.className="metric";const strong=document.createElement("strong");strong.textContent=String(value);const span=document.createElement("span");span.textContent=label;article.append(strong,span);return article}};
+  const dateLabel=value=>{{if(!value||String(value).startsWith("-infinity"))return"Todavía no hay actividad registrada.";const date=new Date(value);return Number.isNaN(date.getTime())?"Actualización no disponible.":`Última actividad: ${{new Intl.DateTimeFormat("es-CL",{{dateStyle:"long",timeStyle:"short"}}).format(date)}}`}};
+  fetch(ENDPOINT,{{headers:{{Accept:"application/json"}}}}).then(async response=>{{const data=await response.json().catch(()=>({{}}));if(!response.ok||!data.ok||!data.metrics)throw new Error(data.message||"No fue posible cargar las métricas reales.");const m=data.metrics;container.replaceChildren(metric(m.publishedLocations??0,"lugares aprobados y publicados"),metric(m.citizenReportsReceived??0,"reportes ciudadanos recibidos"),metric(m.citizenReportsInReview??0,"reportes en revisión"),metric(m.citizenReportsAccepted??0,"reportes aceptados"),metric(m.communesReported??0,"comunas con reportes"));updated.textContent=dateLabel(m.lastActivityAt);status.textContent="Métricas reales actualizadas."}}).catch(error=>{{container.replaceChildren(metric("—","Actividad real temporalmente no disponible"));updated.textContent="No se pudo actualizar la base del piloto.";status.dataset.state="error";status.textContent=error instanceof Error?error.message:"No fue posible cargar las métricas reales."}});
+}})();
+</script>
 """
 
 FORM_SECTION = """
@@ -32,8 +50,9 @@ def build() -> None:
         '<div class="actions"><a class="button primary" href="#panel">Abrir panel demo</a><a class="button secondary" href="#solicitar-piloto">Solicitar piloto</a>',
         1,
     )
+    html = html.replace('<section class="section shell" id="panel">', LIVE_SECTION + '\n<section class="section shell" id="panel">', 1)
     html = html.replace('<section class="governance section">', FORM_SECTION + '\n<section class="governance section">', 1)
-    html = html.replace("</body>", '<script src="/intake-client.js"></script>\n</body>', 1)
+    html = html.replace("</body>", LIVE_SCRIPT + '<script src="/intake-client.js"></script>\n</body>', 1)
     (DESTINATION / "index.html").write_text(html, encoding="utf-8")
 
     shutil.copy2(
@@ -57,6 +76,8 @@ def build() -> None:
     assert 'name="form-name" value="solicitud-piloto-municipal"' in built
     assert 'data-intake-kind="municipal_request"' in built
     assert '/intake-client.js' in built
+    assert 'id="real-metrics"' in built
+    assert METRICS_ENDPOINT in built
     assert (DESTINATION / "intake-client.js").exists()
     assert STATUS_ENDPOINT in status_html
     assert 'id="status-form"' in status_html
