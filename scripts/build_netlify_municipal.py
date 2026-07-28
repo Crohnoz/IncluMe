@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / "netlify-municipal-dist"
 STATUS_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
 METRICS_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-metrics"
+ADMIN_ENDPOINT = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-admin"
 
 FORM_STYLES = """
 <style>
@@ -52,6 +53,11 @@ def build() -> None:
     )
     html = html.replace('<section class="section shell" id="panel">', LIVE_SECTION + '\n<section class="section shell" id="panel">', 1)
     html = html.replace('<section class="governance section">', FORM_SECTION + '\n<section class="governance section">', 1)
+    html = html.replace(
+        '<footer class="footer"><div class="shell footer__in">',
+        '<footer class="footer"><div class="shell footer__in"><a href="/equipo/" rel="nofollow">Acceso equipo</a>',
+        1,
+    )
     html = html.replace("</body>", LIVE_SCRIPT + '<script src="/intake-client.js"></script>\n</body>', 1)
     (DESTINATION / "index.html").write_text(html, encoding="utf-8")
 
@@ -60,6 +66,7 @@ def build() -> None:
         DESTINATION / "static" / "images" / "inclume-app-icon.svg",
     )
     shutil.copy2(ROOT / "netlify" / "intake-client.js", DESTINATION / "intake-client.js")
+    shutil.copy2(ROOT / "netlify" / "admin-client.js", DESTINATION / "admin-client.js")
 
     thanks_dir = DESTINATION / "gracias"
     thanks_dir.mkdir(parents=True, exist_ok=True)
@@ -69,8 +76,14 @@ def build() -> None:
     status_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / "netlify" / "submission-status.html", status_dir / "index.html")
 
+    team_dir = DESTINATION / "equipo"
+    team_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "netlify" / "team-admin.html", team_dir / "index.html")
+
     built = (DESTINATION / "index.html").read_text(encoding="utf-8")
     status_html = (status_dir / "index.html").read_text(encoding="utf-8")
+    admin_html = (team_dir / "index.html").read_text(encoding="utf-8")
+    admin_js = (DESTINATION / "admin-client.js").read_text(encoding="utf-8")
     assert 'data-netlify="true"' in built
     assert 'netlify-honeypot="bot-field"' in built
     assert 'name="form-name" value="solicitud-piloto-municipal"' in built
@@ -81,6 +94,12 @@ def build() -> None:
     assert (DESTINATION / "intake-client.js").exists()
     assert STATUS_ENDPOINT in status_html
     assert 'id="status-form"' in status_html
+    assert 'name="robots" content="noindex,nofollow,noarchive"' in admin_html
+    assert '/admin-client.js' in admin_html
+    assert ADMIN_ENDPOINT in admin_js
+    assert 'sessionStorage' in admin_js
+    assert 'action: "publish_report"' in admin_js
+    assert 'action: "parking_status"' in admin_js
 
 
 if __name__ == "__main__":
