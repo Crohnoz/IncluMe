@@ -23,6 +23,8 @@ jobs:
       SECRET_KEY: ci-only-secret-key
       ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       CSRF_TRUSTED_ORIGINS: http://localhost
+      SUPABASE_FUNCTIONS_URL: https://azdrxkabzldwcmotzaor.supabase.co/functions/v1
+      PUBLIC_ORIGIN: https://inclume-chile.netlify.app
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,6 +157,8 @@ jobs:
 
           intake_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-intake"
           catalog_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-catalog"
+          status_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-status"
+          metrics_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-metrics"
           intake_client = Path("netlify/intake-client.js").read_text(encoding="utf-8")
           assert intake_endpoint in intake_client
           assert 'payload.kind = form.dataset.intakeKind' in intake_client
@@ -165,10 +169,12 @@ jobs:
           assert (citizen / "index.html").exists()
           assert (citizen / "feedback" / "index.html").exists()
           assert (citizen / "gracias" / "index.html").exists()
+          assert (citizen / "estado" / "index.html").exists()
           assert (citizen / "intake-client.js").exists()
           assert not (citizen / "municipalidades.html").exists()
           citizen_html = (citizen / "index.html").read_text(encoding="utf-8")
           citizen_js = (citizen / "app-v4.js").read_text(encoding="utf-8")
+          citizen_status = (citizen / "estado" / "index.html").read_text(encoding="utf-8")
           assert 'name="commune"' in citizen_html
           assert catalog_endpoint in citizen_js
           assert intake_endpoint in citizen_js
@@ -176,6 +182,8 @@ jobs:
           assert "submitPointReport" in citizen_js
           assert 'data.get("commune")' in citizen_js
           assert 'point.publicReference' in citizen_js
+          assert status_endpoint in citizen_status
+          assert 'id="status-form"' in citizen_status
 
           citizen_form = (citizen / "feedback" / "index.html").read_text(encoding="utf-8")
           assert 'name="reporte-ciudadano"' in citizen_form
@@ -186,15 +194,64 @@ jobs:
 
           assert (municipal / "index.html").exists()
           assert (municipal / "gracias" / "index.html").exists()
+          assert (municipal / "estado" / "index.html").exists()
           assert (municipal / "intake-client.js").exists()
           municipal_html = (municipal / "index.html").read_text(encoding="utf-8")
+          municipal_status = (municipal / "estado" / "index.html").read_text(encoding="utf-8")
           assert 'name="solicitud-piloto-municipal"' in municipal_html
           assert 'id="solicitar-piloto"' in municipal_html
           assert 'netlify-honeypot="bot-field"' in municipal_html
           assert 'data-intake-kind="municipal_request"' in municipal_html
           assert 'data-intake-status' in municipal_html
           assert '/intake-client.js' in municipal_html
+          assert 'id="real-metrics"' in municipal_html
+          assert metrics_endpoint in municipal_html
+          assert status_endpoint in municipal_status
+          assert 'id="status-form"' in municipal_status
           PY
+
+      - name: Smoke test deployed Supabase APIs
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Accept: application/json" \
+            -D /tmp/catalog-headers.txt \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-catalog" \
+            -o /tmp/catalog.json
+          jq -e '.ok == true and (.points | type == "array")' /tmp/catalog.json
+          grep -qi "access-control-allow-origin: ${PUBLIC_ORIGIN}" /tmp/catalog-headers.txt
+
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Accept: application/json" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-metrics" \
+            -o /tmp/metrics.json
+          jq -e '.ok == true and (.metrics.publishedLocations | type == "number") and (.metrics.citizenReportsReceived | type == "number")' /tmp/metrics.json
+
+          status_code=$(curl --silent --show-error --retry 3 --retry-delay 2 \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Accept: application/json" \
+            -o /tmp/status.json \
+            -w "%{http_code}" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-status?ref=CIU-000000000000")
+          test "$status_code" = "404"
+          jq -e '.ok == false and (.message | type == "string")' /tmp/status.json
+          ! jq -e 'has("observation") or has("email") or has("coordinates")' /tmp/status.json
+
+          intake_code=$(curl --silent --show-error --retry 3 --retry-delay 2 \
+            -X POST \
+            -H "Origin: ${PUBLIC_ORIGIN}" \
+            -H "Content-Type: application/json" \
+            -d '{"kind":"citizen_report","bot-field":"automated-smoke-test"}' \
+            -o /tmp/intake.json \
+            -w "%{http_code}" \
+            "${SUPABASE_FUNCTIONS_URL}/inclume-intake")
+          test "$intake_code" = "202"
+          jq -e '.ok == true and .reference == "RECIBIDO"' /tmp/intake.json
 
       - name: Run browser and automated accessibility tests
         id: browser_tests
