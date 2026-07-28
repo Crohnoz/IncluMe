@@ -147,12 +147,16 @@ jobs:
         run: |
           python scripts/build_netlify_citizen.py
           python scripts/build_netlify_municipal.py
+          node --check netlify-ciudadania-dist/app-v4.js
+          node --check netlify-ciudadania-dist/intake-client.js
+          node --check netlify-municipal-dist/intake-client.js
           python - <<'PY'
           from pathlib import Path
 
-          endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-intake"
+          intake_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-intake"
+          catalog_endpoint = "https://azdrxkabzldwcmotzaor.supabase.co/functions/v1/inclume-catalog"
           intake_client = Path("netlify/intake-client.js").read_text(encoding="utf-8")
-          assert endpoint in intake_client
+          assert intake_endpoint in intake_client
           assert 'payload.kind = form.dataset.intakeKind' in intake_client
           assert 'Enviar por canal alternativo' in intake_client
 
@@ -163,6 +167,16 @@ jobs:
           assert (citizen / "gracias" / "index.html").exists()
           assert (citizen / "intake-client.js").exists()
           assert not (citizen / "municipalidades.html").exists()
+          citizen_html = (citizen / "index.html").read_text(encoding="utf-8")
+          citizen_js = (citizen / "app-v4.js").read_text(encoding="utf-8")
+          assert 'name="commune"' in citizen_html
+          assert catalog_endpoint in citizen_js
+          assert intake_endpoint in citizen_js
+          assert "loadRemoteCatalog" in citizen_js
+          assert "submitPointReport" in citizen_js
+          assert 'data.get("commune")' in citizen_js
+          assert 'point.publicReference' in citizen_js
+
           citizen_form = (citizen / "feedback" / "index.html").read_text(encoding="utf-8")
           assert 'name="reporte-ciudadano"' in citizen_form
           assert 'netlify-honeypot="bot-field"' in citizen_form
