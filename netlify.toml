@@ -1,16 +1,26 @@
 [build]
-  publish = "preview"
-  command = "echo 'IncluMe static preview ready'"
+  publish = "netlify-municipal-dist"
+  command = "python scripts/build_netlify_municipal.py"
 
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), payment=(), usb=(), geolocation=(self)"
+    Permissions-Policy = "camera=(), microphone=(), payment=(), usb=(), geolocation=()"
     X-Frame-Options = "DENY"
 
 [[headers]]
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/gracias/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/estado/*"
+  [headers.values]
+    Cache-Control = "no-store"
