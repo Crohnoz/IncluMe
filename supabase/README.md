@@ -11,7 +11,7 @@ Esta carpeta versiona la infraestructura persistente utilizada por los sitios p�
 
 No se deben incluir claves, contraseñas ni cadenas de conexión en el repositorio.
 
-## Migraciones
+## Esquema
 
 Las migraciones crean:
 
@@ -19,9 +19,21 @@ Las migraciones crean:
 - `municipal_pilot_requests`: solicitudes institucionales privadas.
 - `public_submission_limits`: límites diarios mediante fingerprints irreversibles.
 - `parking_locations`: catálogo aprobado y publicable.
-- funciones SQL para límite atómico, promoción moderada y métricas agregadas.
+- `intake_moderation_events`: historial inmutable de decisiones editoriales.
+- vistas privadas para las colas ciudadana y municipal.
+- funciones SQL para límite atómico, cambios de estado, publicación moderada y métricas agregadas.
 
 Todas las tablas tienen RLS habilitado y los roles `anon` y `authenticated` no poseen acceso directo. Las Edge Functions usan la credencial `service_role` inyectada por Supabase.
+
+La ausencia de políticas RLS públicas es intencional: produce un estado de denegación total. La lectura o escritura ocurre únicamente mediante funciones controladas.
+
+## Flujo de moderación
+
+- `moderate_citizen_report`: clasifica, solicita aclaración, rechaza, archiva o reabre un reporte y crea un evento.
+- `moderate_municipal_request`: actualiza una solicitud institucional y crea un evento.
+- `promote_citizen_report_to_parking`: exige coordenadas, crea o actualiza el estacionamiento aprobado y registra eventos sobre el reporte y el catálogo.
+
+La firma antigua de publicación sin auditoría fue eliminada. Solo permanece la versión de seis argumentos que registra `actor_label`.
 
 ## Edge Functions
 
@@ -32,12 +44,28 @@ Todas las tablas tienen RLS habilitado y los roles `anon` y `authenticated` no p
 
 Cada función pública implementa controles propios de método, origen, validación y privacidad. `inclume-intake` también aplica honeypot, límite de tamaño y rate limiting diario.
 
-## Despliegue
+## Historial del proyecto desplegado
 
-Con Supabase CLI autenticado y enlazado al proyecto:
+Las migraciones del proyecto remoto fueron aplicadas mediante la integración Supabase con estas versiones:
+
+```text
+20260728020421 create_public_intake_tables
+20260728020455 add_atomic_public_rate_limit
+20260728022251 add_public_submission_references
+20260728022637 create_persistent_parking_catalog
+20260728024720 add_public_pilot_metrics
+20260728030329 add_audited_intake_moderation
+20260728030355 remove_legacy_unaudited_promotion_function
+```
+
+Los archivos locales utilizan una secuencia lógica para permitir reconstruir un proyecto nuevo. **No ejecutar `supabase db push` a ciegas sobre `azdrxkabzldwcmotzaor`**: primero comparar `supabase migration list` y reparar/alinear el historial si la CLI considera pendientes migraciones que ya existen.
+
+## Despliegue en un proyecto nuevo
+
+Con Supabase CLI autenticado y enlazado a un proyecto vacío:
 
 ```bash
-supabase link --project-ref azdrxkabzldwcmotzaor
+supabase link --project-ref <project-ref>
 supabase db push
 supabase functions deploy inclume-intake --no-verify-jwt
 supabase functions deploy inclume-catalog --no-verify-jwt
@@ -45,7 +73,19 @@ supabase functions deploy inclume-status --no-verify-jwt
 supabase functions deploy inclume-metrics --no-verify-jwt
 ```
 
-`--no-verify-jwt` se utiliza porque son endpoints públicos controlados por lógica propia. No debe eliminarse la lista de orígenes, la validación de payload ni las políticas de base de datos.
+`--no-verify-jwt` se utiliza porque son endpoints públicos controlados por lógica propia. No debe eliminarse la lista de orígenes, la validación de payload ni las restricciones de base de datos.
+
+## Comprobación realizada
+
+Se ejecutó una transacción de prueba que:
+
+1. creó un reporte con referencia aleatoria;
+2. lo cambió a `triaged`;
+3. lo promovió al catálogo;
+4. confirmó tres eventos de auditoría;
+5. revirtió la transacción.
+
+Después del rollback quedaron cero reportes, cero estacionamientos y cero eventos de prueba. También se confirmó que no existe la firma de publicación antigua y que permanece una sola función auditada.
 
 ## Principios de datos
 
