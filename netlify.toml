@@ -1,6 +1,6 @@
 [build]
-  publish = "preview"
-  command = "echo 'IncluMe static preview ready'"
+  publish = "netlify-ciudadania-dist"
+  command = "python scripts/build_netlify_citizen.py"
 
 [[headers]]
   for = "/*"
@@ -14,3 +14,13 @@
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/feedback/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/estado/*"
+  [headers.values]
+    Cache-Control = "no-store"
