@@ -1,23 +1,23 @@
 :root {
-  --navy: #123b5d;
-  --blue: #245f8f;
-  --teal: #0b7a70;
-  --ink: #182433;
-  --muted: #5b6673;
-  --line: #cbd4dc;
+  --navy: #15324b;
+  --blue: #075fc4;
+  --teal: #007c70;
+  --ink: #183147;
+  --muted: #557086;
+  --line: #c7deef;
   --paper: #ffffff;
-  --surface: #f4f7f9;
-  --soft: #eaf1f6;
+  --surface: #eaf6ff;
+  --soft: #dff1ff;
   --warning: #8a5b08;
   --warning-soft: #fff3d8;
   --success: #11694f;
   --pending: #6849a8;
   --radius: 22px;
-  --shadow: 0 18px 48px rgba(18, 59, 93, 0.12);
+  --shadow: 0 18px 48px rgba(7, 95, 196, 0.11);
   --ease: cubic-bezier(.22, 1, .36, 1);
   color: var(--ink);
   background: var(--surface);
-  font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+  font-family: "Nunito Sans", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -61,7 +61,7 @@ button { cursor: pointer; }
   gap: .7rem;
   color: var(--navy);
   text-decoration: none;
-  font: 800 1.25rem Manrope, sans-serif;
+  font: 800 1.25rem "Nunito Sans", sans-serif;
 }
 .brand__mark {
   width: 42px;
@@ -84,14 +84,14 @@ button { cursor: pointer; }
   border-radius: 999px;
   color: var(--navy);
   background: var(--soft);
-  font: 800 .76rem Manrope, sans-serif;
+  font: 800 .76rem "Nunito Sans", sans-serif;
   letter-spacing: .02em;
 }
 .hero h1 {
   max-width: 820px;
   margin: 1rem 0 .75rem;
   color: var(--navy);
-  font: 800 clamp(2.35rem, 6vw, 4.6rem) / 1.02 Manrope, sans-serif;
+  font: 800 clamp(2.35rem, 6vw, 4.6rem) / 1.02 "Nunito Sans", sans-serif;
   letter-spacing: -.045em;
 }
 .hero > p {
@@ -127,7 +127,7 @@ button { cursor: pointer; }
   display: grid;
   gap: .4rem;
   color: var(--ink);
-  font-family: Manrope, sans-serif;
+  font-family: "Nunito Sans", sans-serif;
   font-weight: 800;
 }
 .search-field input,
@@ -141,7 +141,7 @@ button { cursor: pointer; }
   border-radius: 13px;
   color: var(--ink);
   background: #fff;
-  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-family: "Nunito Sans", sans-serif;
   font-weight: 400;
 }
 .field textarea { resize: vertical; }
@@ -152,7 +152,7 @@ button { cursor: pointer; }
 .button:focus-visible,
 .view-button:focus-visible,
 .close-button:focus-visible {
-  outline: 3px solid #ef9d37;
+  outline: 3px solid var(--focus, #6846bd);
   outline-offset: 3px;
 }
 .controls__actions,
@@ -178,7 +178,7 @@ button { cursor: pointer; }
   border-radius: 999px;
   color: var(--navy);
   background: #fff;
-  font: 800 .88rem Manrope, sans-serif;
+  font: 800 .88rem "Nunito Sans", sans-serif;
   transition: transform .18s var(--ease), box-shadow .2s var(--ease), background .2s;
 }
 .button--primary {
@@ -221,7 +221,7 @@ button { cursor: pointer; }
 .panel__header h2 {
   margin: 0;
   color: var(--navy);
-  font: 800 1.3rem Manrope, sans-serif;
+  font: 800 1.3rem "Nunito Sans", sans-serif;
 }
 .panel__header p { margin: .25rem 0 0; color: var(--muted); }
 
@@ -249,7 +249,7 @@ button { cursor: pointer; }
 .parking-card h3 {
   margin: 0;
   color: var(--navy);
-  font: 800 1.08rem Manrope, sans-serif;
+  font: 800 1.08rem "Nunito Sans", sans-serif;
 }
 .parking-card p { margin: 0; color: var(--muted); }
 .card-row,
@@ -263,13 +263,13 @@ button { cursor: pointer; }
   border-radius: 999px;
   color: var(--navy);
   background: var(--soft);
-  font: 800 .73rem Manrope, sans-serif;
+  font: 800 .73rem "Nunito Sans", sans-serif;
 }
 .badge--pending { color: var(--pending); background: #f0eafd; }
 .badge--warning { color: var(--warning); background: var(--warning-soft); }
 .card-actions .button { min-height: 42px; padding: .55rem .72rem; font-size: .82rem; }
 .empty-state { margin: 1rem; padding: 1rem; border: 1px dashed var(--line); border-radius: 16px; background: #f7f9fb; }
-.empty-state h3 { margin: 0; color: var(--navy); font-family: Manrope, sans-serif; }
+.empty-state h3 { margin: 0; color: var(--navy); font-family: "Nunito Sans", sans-serif; }
 .empty-state p { color: var(--muted); }
 
 .map-panel { position: relative; min-height: 730px; background: #e7ecef; }
@@ -290,7 +290,7 @@ button { cursor: pointer; }
   color: #fff;
   background: rgba(18, 59, 93, .95);
   box-shadow: 0 12px 30px rgba(18, 59, 93, .22);
-  font: 800 .88rem Manrope, sans-serif;
+  font: 800 .88rem "Nunito Sans", sans-serif;
   pointer-events: none;
 }
 .map-help {
@@ -307,7 +307,7 @@ button { cursor: pointer; }
   background: rgba(255, 255, 255, .95);
   box-shadow: 0 10px 26px rgba(18, 59, 93, .12);
 }
-.map-help strong { color: var(--navy); font-family: Manrope, sans-serif; }
+.map-help strong { color: var(--navy); font-family: "Nunito Sans", sans-serif; }
 .map-help span { color: var(--muted); font-size: .88rem; }
 
 .map-pin {
@@ -320,7 +320,7 @@ button { cursor: pointer; }
   color: #fff;
   background: var(--navy);
   box-shadow: 0 7px 20px rgba(18, 59, 93, .24);
-  font: 800 .8rem Manrope, sans-serif;
+  font: 800 .8rem "Nunito Sans", sans-serif;
 }
 .map-pin--pending { background: var(--pending); }
 .map-pin--user { background: var(--teal); }
@@ -347,7 +347,7 @@ button { cursor: pointer; }
   border-bottom: 1px solid var(--line);
   background: #f7f9fb;
 }
-.sheet__header h2 { margin: .35rem 0 0; color: var(--navy); font: 800 1.5rem Manrope, sans-serif; }
+.sheet__header h2 { margin: .35rem 0 0; color: var(--navy); font: 800 1.5rem "Nunito Sans", sans-serif; }
 .sheet__body { padding: 1rem; overflow-y: auto; }
 .close-button { width: 46px; padding: 0; border-radius: 50%; font-size: 1.4rem; }
 .form-grid,
@@ -361,9 +361,9 @@ button { cursor: pointer; }
 .detail-grid { margin-top: .2rem; }
 .detail-item { padding: .8rem; border: 1px solid var(--line); border-radius: 13px; }
 .detail-item span { display: block; color: var(--muted); font-size: .85rem; }
-.detail-item strong { display: block; margin-top: .2rem; color: var(--navy); font-family: Manrope, sans-serif; }
+.detail-item strong { display: block; margin-top: .2rem; color: var(--navy); font-family: "Nunito Sans", sans-serif; }
 .detail-notes { padding: .9rem; border-radius: 14px; background: var(--soft); }
-.detail-notes h3 { margin: 0 0 .35rem; color: var(--navy); font-family: Manrope, sans-serif; }
+.detail-notes h3 { margin: 0 0 .35rem; color: var(--navy); font-family: "Nunito Sans", sans-serif; }
 .detail-notes p { margin: 0; color: var(--muted); }
 
 .toast {
@@ -384,7 +384,7 @@ button { cursor: pointer; }
 .toast.is-visible { transform: none; opacity: 1; }
 
 .footer { padding: 2rem 0 3rem; border-top: 1px solid var(--line); color: var(--muted); }
-.footer strong { color: var(--navy); font-family: Manrope, sans-serif; }
+.footer strong { color: var(--navy); font-family: "Nunito Sans", sans-serif; }
 .footer p { margin: .3rem 0 0; }
 
 @keyframes card-enter {
