@@ -1,4 +1,4 @@
-/* IncluMe v6 brand mark — wheelchair, location and forward movement. */
+/* IncluMe v7 brand mark — animated wheelchair, location and forward movement. */
 
 .brand {
     gap: 0.72rem;
@@ -32,7 +32,7 @@
     inset: 0;
     z-index: 1;
     border-radius: inherit;
-    background: url("images/inclume-app-icon.svg") center / contain no-repeat;
+    background: url("images/inclume-app-icon.svg?v=7") center / contain no-repeat;
     filter: drop-shadow(0 8px 14px rgba(7, 95, 196, 0.24));
     transform-origin: 46% 58%;
     animation: inclume-wheelchair-enter 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
