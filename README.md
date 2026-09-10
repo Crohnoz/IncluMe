@@ -6,6 +6,14 @@ IncluMe is an accessibility-oriented product exploration for finding, documentin
 
 The project currently exposes a citizen-facing experience and a municipal demonstration surface. It is presented as an **early product**, not as a complete public infrastructure or authoritative accessibility registry.
 
+## Repository structure
+
+The default `main` branch is intentionally the **product and documentation surface**. The deployable public experiences live in dedicated branches so the citizen and municipal contexts remain easy to inspect independently.
+
+- [`netlify-ciudadania`](https://github.com/Crohnoz/IncluMe/tree/netlify-ciudadania) — citizen-facing implementation
+- [`netlify-municipalidades`](https://github.com/Crohnoz/IncluMe/tree/netlify-municipalidades) — municipal demonstration implementation
+- [Public engineering evidence](https://github.com/Crohnoz/Crohnoz/blob/main/evidence/inclume.md) — curated product/engineering case
+
 ## Public surfaces
 
 | Surface | Link | Purpose |
@@ -15,7 +23,7 @@ The project currently exposes a citizen-facing experience and a municipal demons
 | Report / correction | https://inclume-chile.netlify.app/feedback/ | Submit a new point or correction |
 | Submission status | https://inclume-municipalidades.netlify.app/estado/ | Review the state of a submitted contribution |
 
-Netlify is the primary public demonstration surface. Repository previews are retained only as development fallbacks.
+Netlify is the primary public demonstration surface. Repository branches are retained as inspectable implementation surfaces rather than pretending `main` is a monolithic production branch.
 
 ## Product questions being explored
 
@@ -31,16 +39,14 @@ IncluMe is currently useful for validating questions such as:
 
 - The project remains an early-stage product exploration.
 - Public demonstrations should not be interpreted as an official government registry.
+- The two public contexts are demonstration surfaces, not proof of institutional adoption.
 - Product maturity will advance only after stronger data validation, operational evidence and sustained real-user use.
-
-## Deployment branches
-
-- `netlify-ciudadania` — citizen-facing surface
-- `netlify-municipalidades` — municipal demonstration surface
 
 ## Maturity model
 
 `L0 IDEA → ● L1 EARLY PRODUCT → L2 PILOT → L3 PRODUCTION → L4 SCALE`
+
+The maturity label moves only when evidence supports it.
 
 ## Crohnoz Labs
 
