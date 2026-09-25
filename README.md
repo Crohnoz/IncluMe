@@ -11,6 +11,7 @@
 <a href="https://inclume-chile.netlify.app/"><img src="https://img.shields.io/badge/OPEN-CITIZEN_DEMO-EC4899?style=for-the-badge" height="34" alt="Citizen demo" /></a>
 <a href="https://inclume-municipalidades.netlify.app/"><img src="https://img.shields.io/badge/OPEN-MUNICIPAL_DEMO-8B5CF6?style=for-the-badge" height="34" alt="Municipal demo" /></a>
 <a href="https://github.com/Crohnoz/Crohnoz/blob/main/evidence/inclume.md"><img src="https://img.shields.io/badge/READ-ENGINEERING_CASE-3B82F6?style=for-the-badge" height="34" alt="Engineering case" /></a>
+<a href="https://crohnozlabs.cl"><img src="https://img.shields.io/badge/CROHNOZ-LABS-06B6D4?style=for-the-badge" height="34" alt="Crohnoz Labs" /></a>
 
 **Discover → Report → Review → Correct → Improve**
 
